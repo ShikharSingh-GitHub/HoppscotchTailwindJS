@@ -411,7 +411,7 @@ const RightPanel = () => {
     ];
 
     return (
-      <div className="flex flex-1 flex-col h-full">
+      <div className="flex flex-1 flex-col">
         {/* Breadcrumb */}
         <div className="flex items-center overflow-x-auto whitespace-nowrap border-b border-gray-700/30 px-4 py-2 text-xs text-gray-500">
           <span className="truncate">Request</span>
@@ -420,7 +420,7 @@ const RightPanel = () => {
         </div>
 
         {/* Content */}
-        <div className="flex flex-col px-4 mt-4 flex-1 min-h-0">
+        <div className="flex flex-col px-4 mt-4">
           {/* Language Selector */}
           <div className="mb-4">
             <Tippy
@@ -465,9 +465,9 @@ const RightPanel = () => {
           </div>
 
           {/* Code Editor Container */}
-          <div className="rounded border border-gray-700 flex-1 flex flex-col min-h-0">
+          <div className="rounded border border-gray-700">
             {/* Header */}
-            <div className="flex items-center justify-between pl-4 border-b border-gray-700">
+            <div className="flex items-center justify-between pl-4">
               <label className="truncate font-semibold text-gray-400 text-sm py-3">
                 Generated code
               </label>
@@ -505,28 +505,30 @@ const RightPanel = () => {
             </div>
 
             {/* Code Editor */}
-            <div className="bg-zinc-900 rounded-b flex-1 min-h-0">
-              <div className="flex h-full">
-                {/* Line Numbers */}
-                <div className="bg-zinc-800/50 px-3 py-3 text-xs text-gray-500 select-none border-r border-gray-700">
-                  <div className="leading-5">1</div>
-                  <div className="leading-5">2</div>
-                </div>
-
-                {/* Code Content */}
-                <div className="flex-1 p-3 font-mono text-sm text-white overflow-auto">
-                  <div className="leading-5">
-                    <span className="text-green-400">curl</span>{" "}
-                    <span className="text-blue-400">--request</span>{" "}
-                    <span className="text-yellow-400">PATCH</span>{" "}
-                    <span className="text-gray-400">\</span>
+            <div className="rounded-b border-t border-gray-700">
+              <div className="bg-zinc-900 rounded-b">
+                <div className="flex">
+                  {/* Line Numbers */}
+                  <div className="bg-zinc-800/50 px-3 py-3 text-xs text-gray-500 select-none border-r border-gray-700">
+                    <div className="leading-5">1</div>
+                    <div className="leading-5">2</div>
                   </div>
-                  <div className="leading-5">
-                    {"  "}
-                    <span className="text-blue-400">--url</span>{" "}
-                    <span className="text-green-300">
-                      https://echo.hoppscotch.io/
-                    </span>
+
+                  {/* Code Content */}
+                  <div className="flex-1 p-3 font-mono text-sm text-white overflow-x-auto">
+                    <div className="leading-5">
+                      <span className="text-green-400">curl</span>{" "}
+                      <span className="text-blue-400">--request</span>{" "}
+                      <span className="text-yellow-400">PATCH</span>{" "}
+                      <span className="text-gray-400">\</span>
+                    </div>
+                    <div className="leading-5">
+                      {"  "}
+                      <span className="text-blue-400">--url</span>{" "}
+                      <span className="text-green-300">
+                        https://echo.hoppscotch.io/
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

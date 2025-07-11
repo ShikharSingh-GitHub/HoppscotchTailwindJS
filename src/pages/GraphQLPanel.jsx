@@ -3,6 +3,7 @@ import Tippy from "@tippyjs/react";
 import { createTheme } from "@uiw/codemirror-themes";
 import CodeMirror from "@uiw/react-codemirror";
 import {
+  BookOpen,
   ChevronDown,
   CornerDownLeft,
   Eye,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import QueryParameterComponent from "../components/LeftPanel/QueryParameter";
-import RightPanel from "../components/RightPanel/RightPanel";
+import GraphQLRightPanel from "../components/RightPanel/GraphQLRightPanel";
 import useRequestStore from "../store/store";
 
 function GraphQLPanel() {
@@ -21,7 +22,7 @@ function GraphQLPanel() {
   const containerRef = useRef(null);
   const isResizing = useRef(false);
 
-  const MIN_WIDTH = 64.9;
+  const MIN_WIDTH = 25;
   const MAX_WIDTH = 75;
 
   const startResizing = () => {
@@ -56,11 +57,12 @@ function GraphQLPanel() {
   ]);
 
   const [activeTab, setActiveTap] = useState(1);
+  const tabContainerRef = useRef(null);
 
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({
-        left: containerRef.current.scrollWidth,
+    if (tabContainerRef.current) {
+      tabContainerRef.current.scrollTo({
+        left: tabContainerRef.current.scrollWidth,
         behavior: "smooth",
       });
     }
@@ -107,6 +109,7 @@ function GraphQLPanel() {
     },
   });
   const extensions = [javascript({ jsx: true })];
+
   return (
     <div
       className="flex w-full h-full border-l border-gray-700/30"
@@ -120,13 +123,12 @@ function GraphQLPanel() {
                 <input
                   type="text"
                   className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
-                  // placeholder="Enter a uURL or paste a cURL command"
                   value={"https://echo.hoppscotch.io/graphql"}
                 />
               </div>
             </div>
 
-            {/* Connext */}
+            {/* Connect */}
             <div className="w-[15%] flex lg:mt-0 mt-2 lg:h-full h-8 justify-between items-center">
               <button
                 onClick={() => requested()}
@@ -140,7 +142,7 @@ function GraphQLPanel() {
           <div className="w-full flex items-center lg:h-[50px] h-[40px] relative overflow-y-hidden">
             <div
               className="flex items-center h-[50px] overflow-x-auto mt-3"
-              ref={containerRef}>
+              ref={tabContainerRef}>
               {history.map((h, index) => (
                 <div
                   key={h.id}
@@ -208,19 +210,19 @@ function GraphQLPanel() {
             <>
               <div>
                 <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                  {/* <!-- Label --> */}
+                  {/* Label */}
                   <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
                     Query
                   </label>
 
-                  {/* <!-- Button group --> */}
+                  {/* Button group */}
                   <div className="flex">
-                    {/* <!-- Request Button --> */}
+                    {/* Request Button */}
                     <button
                       aria-label="button"
                       role="button"
                       className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap rounded px-4 py-2 rounded-none text-[#6366f2]"
-                      tabindex="0">
+                      tabIndex="0">
                       <span className="inline-flex items-center justify-center whitespace-nowrap ">
                         <svg
                           viewBox="0 0 24 24"
@@ -230,9 +232,9 @@ function GraphQLPanel() {
                           <path
                             fill="none"
                             stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
                             d="m6 3l14 9l-14 9z"></path>
                         </svg>
                         <div className="truncate text-[13px] text-[13px]">
@@ -241,12 +243,12 @@ function GraphQLPanel() {
                       </span>
                     </button>
 
-                    {/* <!-- Save Button --> */}
+                    {/* Save Button */}
                     <button
                       aria-label="button"
                       role="button"
                       className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                      tabindex="0">
+                      tabIndex="0">
                       <span className="inline-flex items-center justify-center whitespace-nowrap ">
                         <svg
                           viewBox="0 0 24 24"
@@ -256,9 +258,9 @@ function GraphQLPanel() {
                           <g
                             fill="none"
                             stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2">
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2">
                             <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
                             <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7M7 3v4a1 1 0 0 0 1 1h7"></path>
                           </g>
@@ -267,13 +269,25 @@ function GraphQLPanel() {
                       </span>
                     </button>
 
-                    {/* <!-- Docs Link --> */}
+                    {/* Documentation Button */}
+                    <button
+                      aria-label="Documentation"
+                      role="button"
+                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <BookOpen size={16} className="mr-2" />
+                        <div className="truncate text-[13px]">Docs</div>
+                      </span>
+                    </button>
+
+                    {/* Help Link */}
                     <a
                       href=""
                       target="_blank"
                       role="button"
                       className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap text-zinc-400 hover:text-white p-2"
-                      tabindex="0">
+                      tabIndex="0">
                       <span className="inline-flex items-center justify-center whitespace-nowrap ">
                         <svg
                           viewBox="0 0 24 24"
@@ -283,9 +297,9 @@ function GraphQLPanel() {
                           <g
                             fill="none"
                             stroke="currentColor"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2">
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2">
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
                           </g>
@@ -293,12 +307,12 @@ function GraphQLPanel() {
                       </span>
                     </a>
 
-                    {/* <!-- Button Icons --> */}
+                    {/* Button Icons */}
                     <button
                       aria-label="button"
                       role="button"
                       className="icon-btn p-2 text-zinc-400 hover:text-white"
-                      tabindex="0">
+                      tabIndex="0">
                       <svg
                         viewBox="0 0 24 24"
                         width="1em"
@@ -307,9 +321,9 @@ function GraphQLPanel() {
                         <g
                           fill="none"
                           stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2">
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
                           <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
                           <path d="m16 16l-2 2l2 2M3 18h7"></path>
                         </g>
@@ -320,7 +334,7 @@ function GraphQLPanel() {
                       aria-label="button"
                       role="button"
                       className="icon-btn p-2 text-zinc-400 hover:text-white"
-                      tabindex="0">
+                      tabIndex="0">
                       <svg
                         viewBox="0 0 24 24"
                         width="1em"
@@ -329,9 +343,9 @@ function GraphQLPanel() {
                         <path
                           fill="none"
                           stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
                           d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"
                         />
                       </svg>
@@ -341,7 +355,7 @@ function GraphQLPanel() {
                       aria-label="button"
                       role="button"
                       className="icon-btn p-2 text-zinc-400 hover:text-white"
-                      tabindex="0">
+                      tabIndex="0">
                       <svg
                         viewBox="0 0 24 24"
                         width="1em"
@@ -350,9 +364,9 @@ function GraphQLPanel() {
                         <path
                           fill="none"
                           stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
                           d="M15 4V2m0 14v-2M8 9h2m10 0h2m-4.2 2.8L19 13m-4-4h.01m2.79-2.8L19 5M3 21l9-9m.2-5.8L11 5"
                         />
                       </svg>
@@ -362,7 +376,7 @@ function GraphQLPanel() {
                       aria-label="button"
                       role="button"
                       className="icon-btn p-2 text-zinc-400 hover:text-white"
-                      tabindex="0">
+                      tabIndex="0">
                       <svg
                         viewBox="0 0 24 24"
                         width="1em"
@@ -371,9 +385,9 @@ function GraphQLPanel() {
                         <g
                           fill="none"
                           stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2">
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
                           <rect
                             width="14"
                             height="14"
@@ -409,19 +423,19 @@ function GraphQLPanel() {
           {tap === "Variables" && (
             <>
               <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                {/* <!-- Label --> */}
+                {/* Label */}
                 <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
                   Variables
                 </label>
 
-                {/* <!-- Button group --> */}
+                {/* Button group */}
                 <div className="flex">
                   <a
                     href=""
                     target="_blank"
                     role="button"
                     className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap text-zinc-400 hover:text-white p-2"
-                    tabindex="0">
+                    tabIndex="0">
                     <span className="inline-flex items-center justify-center whitespace-nowrap ">
                       <svg
                         viewBox="0 0 24 24"
@@ -431,9 +445,9 @@ function GraphQLPanel() {
                         <g
                           fill="none"
                           stroke="currentColor"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2">
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
                           <circle cx="12" cy="12" r="10"></circle>
                           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
                         </g>
@@ -441,12 +455,12 @@ function GraphQLPanel() {
                     </span>
                   </a>
 
-                  {/* <!-- Button Icons --> */}
+                  {/* Button Icons */}
                   <button
                     aria-label="button"
                     role="button"
                     className="icon-btn p-2 text-zinc-400 hover:text-white"
-                    tabindex="0">
+                    tabIndex="0">
                     <svg
                       viewBox="0 0 24 24"
                       width="1em"
@@ -455,9 +469,9 @@ function GraphQLPanel() {
                       <g
                         fill="none"
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2">
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2">
                         <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
                         <path d="m16 16l-2 2l2 2M3 18h7"></path>
                       </g>
@@ -468,7 +482,7 @@ function GraphQLPanel() {
                     aria-label="button"
                     role="button"
                     className="icon-btn p-2 text-zinc-400 hover:text-white"
-                    tabindex="0">
+                    tabIndex="0">
                     <svg
                       viewBox="0 0 24 24"
                       width="1em"
@@ -477,9 +491,9 @@ function GraphQLPanel() {
                       <path
                         fill="none"
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"
                       />
                     </svg>
@@ -489,7 +503,7 @@ function GraphQLPanel() {
                     aria-label="button"
                     role="button"
                     className="icon-btn p-2 text-zinc-400 hover:text-white"
-                    tabindex="0">
+                    tabIndex="0">
                     <svg
                       viewBox="0 0 24 24"
                       width="1em"
@@ -498,9 +512,9 @@ function GraphQLPanel() {
                       <path
                         fill="none"
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M15 4V2m0 14v-2M8 9h2m10 0h2m-4.2 2.8L19 13m-4-4h.01m2.79-2.8L19 5M3 21l9-9m.2-5.8L11 5"
                       />
                     </svg>
@@ -510,7 +524,7 @@ function GraphQLPanel() {
                     aria-label="button"
                     role="button"
                     className="icon-btn p-2 text-zinc-400 hover:text-white"
-                    tabindex="0">
+                    tabIndex="0">
                     <svg
                       viewBox="0 0 24 24"
                       width="1em"
@@ -519,9 +533,9 @@ function GraphQLPanel() {
                       <g
                         fill="none"
                         stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2">
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2">
                         <rect
                           width="14"
                           height="14"
@@ -550,7 +564,7 @@ function GraphQLPanel() {
 
           {tap === "Headers" && <QueryParameterComponent />}
         </div>
-        <div class="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"></div>
+        <div className="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"></div>
         <div className="flex justify-center mt-4">
           <div className="grid grid-cols-2 gap-x-3 space-y-2">
             <p className="text-center text-zinc-500 text-xs font-medium">
@@ -605,7 +619,7 @@ function GraphQLPanel() {
         style={{ width: 4, cursor: "col-resize", background: "#27272a" }}
       />
       <div style={{ width: `${100 - leftWidth}%` }}>
-        <RightPanel />
+        <GraphQLRightPanel />
       </div>
     </div>
   );
