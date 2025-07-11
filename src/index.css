@@ -1,0 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #181818;
+  color: #fff;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Standard */
+  font-family: "Poppins", serif;
+}
+
+:root {
+  --accent-light-color: #818cf8;
+  --accent-dark-color: #4f46e5;
+  --accent-contrast-color: #fff;
+  --gradient-from-color: #818cf8;
+  --gradient-via-color: #6366f1;
+  --gradient-to-color: #4f46e5;
+
+  /* --search-bg: #262626; */
+  /* --search-hover-bg: #1f1f20; */
+}
+
+@theme {
+  --color-primary: #181818;
+  --color-search-bg: #262626;
+  --color-search-bg-hover: #1f1f20;
+  --color-btn: #6366f1;
+  --color-btn-hover: #4f46e5;
+  /* --color-secondary-btn: #182923;
+  --color-btn-color: #10b07b;
+  --color-secondary-btn-border: #124434; */
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+/* Force Light Theme for Tippy */
+.tippy-box[data-theme~="light"] {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid #ddd !important;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1) !important;
+  padding: 2px 6px !important;
+  font-size: 10px !important;
+  line-height: 1.2 !important;
+}
+
+.tippy-box[data-theme~="light"] .tippy-arrow {
+  color: white !important;
+}
+
+::-webkit-scrollbar {
+  width: 1px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #39393a;
+  border-radius: 50px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7a7a7e;
+  border-radius: 50px;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
