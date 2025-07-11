@@ -1,9 +1,9 @@
-import { ChevronDown, Eye, Layers, Plus, Save, X } from "lucide-react";
-import IconButton from "../IconButton/IconButton";
-import { useEffect, useRef, useState } from "react";
 import Tippy from "@tippyjs/react";
-import RequestSection from "./RequestSection";
+import { ChevronDown, Eye, Layers, Plus, Save, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import useRequestStore from "../../store/store";
+import IconButton from "../IconButton/IconButton";
+import RequestSection from "./RequestSection";
 
 const methods = [
   "GET",
@@ -13,7 +13,7 @@ const methods = [
   "DELETE",
   "HEAD",
   "OPTIONS",
-  "CONNECTS",
+  "CONNECT",
   "TRACE",
   "CUSTOM",
 ];
@@ -103,11 +103,10 @@ const RouteHeader = () => {
       {/* HEADERS and TAPS SECTION */}
       <div className="bg-search-bg-hover h-[46px] pe-3">
         <div className="grid grid-cols-12">
-          <div className="col-span-8 flex items-center lg:h-[50px] h-[40px] relative">
+          <div className="flex items-center h-[46px] relative lg:col-span-7 col-span-8">
             <div
-              className="flex items-center h-[50px] overflow-x-auto mt-3"
-              ref={containerRef}
-            >
+              className="flex items-center h-full overflow-x-auto"
+              ref={containerRef}>
               {history.map((h, index) => (
                 <div
                   key={h.id}
@@ -116,13 +115,11 @@ const RouteHeader = () => {
                     activeTab === index + 1
                       ? "bg-primary border-t-[3px] border-btn text-white"
                       : "text-zinc-400 hover:bg-search-bg"
-                  } group`}
-                >
+                  } group`}>
                   <p
                     className={`text-[11px] font-semibold ${getMethodColor(
                       h.method
-                    )}`}
-                  >
+                    )}`}>
                     {h.method}
                   </p>
                   <p className="font-semibold text-[12px]">{h.title}</p>
@@ -133,15 +130,13 @@ const RouteHeader = () => {
                         <span className="text-[10px] font-semibold">Close</span>
                       }
                       placement="top"
-                      theme="light"
-                    >
+                      theme="light">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           removeHistory(h.id, index + 1);
                         }}
-                        className="sticky right-0 lg:invisible group-hover:visible"
-                      >
+                        className="sticky right-0 lg:invisible group-hover:visible">
                         <X size={14} />
                       </button>
                     </Tippy>
@@ -185,9 +180,11 @@ const RouteHeader = () => {
             <div className="relative lg:col-span-1 col-span-2 lg:ps-4 ps-2">
               <div
                 onClick={() => setSeeAllMethod(!seeAllMethods)}
-                className="cursor-pointer flex h-8 items-center justify-between"
-              >
-                <button className="lg:text-xs text-[10px] font-bold">
+                className="cursor-pointer flex h-8 items-center justify-between">
+                <button
+                  className={`lg:text-xs text-[10px] font-semibold ${getMethodColor(
+                    history[activeTab - 1].method
+                  )}`}>
                   {history[activeTab - 1].method}
                 </button>
                 <ChevronDown size={15} />
@@ -205,8 +202,7 @@ const RouteHeader = () => {
                       key={methods}
                       className={`flex text-[11px] mb-1 px-4 py-[6px] rounded font-semibold hover:bg-search-bg w-full ${getMethodColor(
                         methods
-                      )}`}
-                    >
+                      )}`}>
                       {methods}
                     </button>
                   ))}
@@ -218,7 +214,7 @@ const RouteHeader = () => {
             <div className="lg:col-span-6 col-span-5">
               <input
                 type="text"
-                className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-hidden rounded placeholder:text-[11px] placeholder:text-zinc-500"
+                className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
                 placeholder="Enter a uURL or paste a cURL command"
                 value={history[activeTab - 1].url}
                 onChange={(e) =>
@@ -241,12 +237,10 @@ const RouteHeader = () => {
               }
               placement="top"
               theme="light"
-              delay={300}
-            >
+              delay={300}>
               <button
                 onClick={() => requested()}
-                className="px-4 font-bold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-l"
-              >
+                className="px-4 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-l">
                 Send
               </button>
             </Tippy>
@@ -280,9 +274,8 @@ const RouteHeader = () => {
               }
               placement="top"
               theme="light"
-              delay={300}
-            >
-              <button className="flex h-full items-center justify-between px-3 rounded-l text-xs font-bold text-zinc-400 hover:text-white hover:bg-search-bg">
+              delay={300}>
+              <button className="flex h-full items-center justify-between px-3 rounded-l text-xs font-semibold text-zinc-400 hover:text-white hover:bg-search-bg">
                 <Save size={17} />
                 <span className="mx-1"></span>
                 Save

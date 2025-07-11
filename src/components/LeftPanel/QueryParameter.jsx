@@ -48,7 +48,7 @@ const QueryParameterComponent = () => {
     <>
       {/* Header */}
       <div className="flex justify-between py-2 items-center h-10 mt-1">
-        <p className="lg:text-xs text-[10px] text-zinc-500 font-bold px-4">
+        <p className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
           Query Parameters
         </p>
         <div className="flex space-x-4">
@@ -61,8 +61,7 @@ const QueryParameterComponent = () => {
           <Tippy content="Clear All" placement="top" theme="light">
             <button
               onClick={clearAll}
-              className="text-zinc-400 hover:text-white"
-            >
+              className="text-zinc-400 hover:text-white">
               <Trash2 size={16} />
             </button>
           </Tippy>
@@ -76,8 +75,7 @@ const QueryParameterComponent = () => {
           <Tippy content="Add New" placement="top" theme="light">
             <button
               onClick={addParameter}
-              className="text-zinc-400 hover:text-white"
-            >
+              className="text-zinc-400 hover:text-white">
               <Plus size={16} />
             </button>
           </Tippy>
@@ -99,14 +97,15 @@ const QueryParameterComponent = () => {
                     : field === "value"
                     ? "lg:col-span-3 col-span-3"
                     : "lg:col-span-3 col-span-6"
-                } col-span-3 border-[0.5px] border-search-bg`}
-              >
+                } col-span-3 border-[0.5px] border-search-bg`}>
                 <input
                   type="text"
                   className="w-full ps-2 placeholder:text-xs placeholder-zinc-600 placeholder:font-semibold focus:outline-none h-full text-xs placeholder:text-[10px]"
                   placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                   value={param[field]}
-                  onChange={(e) => handleInputChange(param.id, field, e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange(param.id, field, e.target.value)
+                  }
                 />
               </div>
             ))}
@@ -124,8 +123,7 @@ const QueryParameterComponent = () => {
               <Tippy content="Remove" placement="top" theme="light">
                 <button
                   onClick={() => removeParameter(param.id)}
-                  className="text-red-400 border-l border-search-bg ps-2"
-                >
+                  className="text-red-400 border-l border-search-bg ps-2">
                   <Trash size={16} />
                 </button>
               </Tippy>

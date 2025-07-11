@@ -1,5 +1,3 @@
-import { useState } from "react";
-import IconButton from "../IconButton/IconButton";
 import {
   Copy,
   CornerDownLeft,
@@ -9,7 +7,9 @@ import {
   Save,
   WrapText,
 } from "lucide-react";
+import { useState } from "react";
 import useRequestStore from "../../store/store";
+import IconButton from "../IconButton/IconButton";
 
 const Response = () => {
   const responseHeader = [
@@ -86,12 +86,11 @@ const Response = () => {
               <button
                 key={r.id}
                 onClick={() => setResponseH(r.name)}
-                className={`text-[13px] font-bold hover:text-white ${
+                className={`text-[13px] font-semibold hover:text-white ${
                   responseH === r.name
                     ? "underline underline-offset-10 decoration-btn decoration-2 text-white"
                     : "text-zinc-500"
-                }`}
-              >
+                }`}>
                 {r.name}
               </button>
             ))}
@@ -148,15 +147,13 @@ const Response = () => {
                     part.match(/^"/) ? (
                       <span
                         key={idx}
-                        className="text-blue-400 text-[13px] font-semibold pl-4"
-                      >
+                        className="text-blue-400 text-[13px] font-semibold pl-4">
                         {part}
                       </span>
                     ) : part.match(/".*"/) ? (
                       <span
                         key={idx}
-                        className="text-purple-400 text-[13px] font-semibold pl-4"
-                      >
+                        className="text-purple-400 text-[13px] font-semibold pl-4">
                         {part}
                       </span>
                     ) : (

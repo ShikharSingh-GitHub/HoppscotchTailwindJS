@@ -1,7 +1,7 @@
-import { Search, Download, CircleUserRound, CloudUpload } from "lucide-react";
 import Tippy from "@tippyjs/react";
-import "tippy.js/dist/tippy.css";
+import { CircleUserRound, CloudUpload, Download, Search } from "lucide-react";
 import { useState } from "react";
+import "tippy.js/dist/tippy.css";
 import SearchModal from "../Modal/Search";
 
 const Navbar = () => {
@@ -10,18 +10,13 @@ const Navbar = () => {
   return (
     <>
       {/* Search Modal */}
-      {search && (
-        <SearchModal
-          onClose={() => setSearch(false)}
-        />
-      )}
+      {search && <SearchModal onClose={() => setSearch(false)} />}
 
       <header className="grid grid-cols-5 p-2 gap-x-4 h-[6.5dvh]">
         <div className="col-span-2">
           <a
             href="/"
-            className="uppercase lg:text-[13px] text-[12px] font-bold ms-3"
-          >
+            className="uppercase lg:text-[13px] text-[12px] font-semibold ms-3">
             hoppscotch
           </a>
         </div>
@@ -30,8 +25,7 @@ const Navbar = () => {
           <div className="flex justify-between items-center">
             <button
               onClick={() => setSearch(true)}
-              className="relative flex flex-1 cursor-text items-center justify-between self-stretch rounded px-2 hover:text-gray-400 text-zinc-500 transition overflow-hidden h-8 hover:bg-search-bg-hover bg-search-bg"
-            >
+              className="relative flex flex-1 cursor-text items-center justify-between self-stretch rounded px-2 hover:text-gray-400 text-zinc-500 transition overflow-hidden h-8 hover:bg-search-bg-hover bg-search-bg">
               <div className="flex items-center space-x-2 font-semibold">
                 <Search size={16} />
                 <span className="text-xs font-semibold">Search</span>
@@ -53,8 +47,7 @@ const Navbar = () => {
               content={
                 <span className="text-[10px] font-semibold">Install App</span>
               }
-              theme="light"
-            >
+              theme="light">
               <button className="lg:block hidden text-gray-400 hover:text-white">
                 <Download size={17} />
               </button>
@@ -64,8 +57,7 @@ const Navbar = () => {
               content={
                 <span className="text-[10px] font-semibold">Support ?</span>
               }
-              theme="light"
-            >
+              theme="light">
               <button className="text-gray-400 hover:text-white">
                 <CircleUserRound size={17} />
               </button>
@@ -75,10 +67,10 @@ const Navbar = () => {
           <div className="flex space-x-2 items-center">
             <button className="lg:flex hidden items-center justify-center font-semibold transition rounded px-4 py-2 hover:text-emerald-600 h-8 border border-emerald-600/25 bg-emerald-500/10 !text-emerald-500 hover:border-emerald-600/20 hover:bg-emerald-600/20 focus-visible:border-emerald-600/20 focus-visible:bg-emerald-600/20 text-xs">
               <CloudUpload className="me-2" size={14} />
-              <span className="font-bold">Save My Workspace</span>
+              <span className="font-semibold">Save My Workspace</span>
             </button>
 
-            <button className="text-xs bg-btn hover:bg-btn-hover py-1 px-4 font-bold h-8 rounded">
+            <button className="text-xs bg-btn hover:bg-btn-hover py-1 px-4 font-semibold h-8 rounded">
               Login
             </button>
           </div>

@@ -58,12 +58,11 @@ const RequestSection = () => {
             <button
               key={t.id}
               onClick={() => setTab(t.name)}
-              className={`lg:text-[13px] text-[12px] font-bold hover:text-white ${
+              className={`lg:text-[13px] text-[12px] font-semibold hover:text-white ${
                 tap === t.name
                   ? "underline underline-offset-10 decoration-btn decoration-2 text-white"
                   : "text-zinc-500"
-              }`}
-            >
+              }`}>
               {t.name}
             </button>
           ))}
@@ -71,11 +70,10 @@ const RequestSection = () => {
         {/* Variables */}
         <button
           onClick={() => setTab("Variables")}
-          className={`lg:text-[13px] text-[12px] font-bold text-zinc-500 hover:text-white ${
+          className={`lg:text-[13px] text-[12px] font-semibold text-zinc-500 hover:text-white ${
             tap === "Variables" &&
             "underline underline-offset-8 decoration-btn decoration-2"
-          }`}
-        >
+          }`}>
           Variables
         </button>
       </div>
@@ -84,15 +82,13 @@ const RequestSection = () => {
       <div ref={containerRef} className="h- w-full h-[70dvh]">
         <div
           style={{ height: `${topHeight - 0.5}%` }}
-          className="overflow-y-auto  pb-20 "
-        >
+          className="overflow-y-auto  pb-20 ">
           <QueryParameter />
         </div>
 
         <div
           className="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"
-          onMouseDown={startResizing}
-        ></div>
+          onMouseDown={startResizing}></div>
 
         <div style={{ height: `${bottomHeight}%` }} className="px-4 py-2">
           <Response />

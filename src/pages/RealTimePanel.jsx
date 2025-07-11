@@ -13,10 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import IconButton from "../components/IconButton/IconButton";
 import QueryParameterComponent from "../components/LeftPanel/QueryParameter";
-import RequestSection from "../components/LeftPanel/RequestSection";
-import RouteHeader from "../components/LeftPanel/RouteHeader";
 import useRequestStore from "../store/store";
 
 function RealTimePanel() {
@@ -97,7 +94,7 @@ function RealTimePanel() {
             <div className="w-full">
               <input
                 type="text"
-                className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-hidden rounded placeholder:text-[11px] placeholder:text-zinc-500"
+                className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
                 value={"wss://echo.hoppscotch.io"} // WebSocket secure URL
               />
             </div>
@@ -106,7 +103,7 @@ function RealTimePanel() {
           <div className="w-[15%] flex lg:mt-0 mt-2 lg:h-full h-8 justify-between items-center">
             <button
               onClick={() => requested()}
-              className="px-4 font-bold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-sm">
+              className="px-4 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-sm">
               Connect
             </button>
           </div>
@@ -166,7 +163,7 @@ function RealTimePanel() {
             <button
               key={t.id}
               onClick={() => setTab(t.name)}
-              className={`lg:text-[13px] text-[12px] font-bold hover:text-white ${
+              className={`lg:text-[13px] text-[12px] font-semibold hover:text-white ${
                 tap === t.name
                   ? "underline underline-offset-10 decoration-btn decoration-2 text-white"
                   : "text-zinc-500"
@@ -183,7 +180,7 @@ function RealTimePanel() {
             <div>
               <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
                 {/* <!-- Label --> */}
-                <label className="lg:text-xs text-[10px] text-zinc-500 font-bold px-4">
+                <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
                   Query
                 </label>
 
@@ -384,7 +381,7 @@ function RealTimePanel() {
           <>
             <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
               {/* <!-- Label --> */}
-              <label className="lg:text-xs text-[10px] text-zinc-500 font-bold px-4">
+              <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
                 Variables
               </label>
 
@@ -525,63 +522,52 @@ function RealTimePanel() {
         {tap === "Headers" && <QueryParameterComponent />}
       </div>
 
-      {/* KeyBoard Shortcuts */}
-      <div className="flex flex-col">
-        <div
-          className="cursor-row-resize flex items-center justify-center py-2 border-t border-b border-zinc-800 hover:bg-search-bg"
-          draggable="true"
-          onDrag={handleDrag}>
-          <GripVertical size={16} className="text-zinc-600" />
-        </div>
-
-        <div
-          className="flex justify-center mt-4"
-          style={{ height: `${shortcutHeight}px` }}>
-          <div className="grid grid-cols-2 gap-x-3 space-y-2">
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Send Request
+      <div class="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"></div>
+      <div className="flex justify-center mt-4">
+        <div className="grid grid-cols-2 gap-x-3 space-y-2">
+          <p className="text-center text-zinc-500 text-xs font-medium">
+            Send Request
+          </p>
+          <div className="flex space-x-1">
+            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
+              Ctrl
             </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                Ctrl
-              </p>
-              <p className="text-[10px] bg-stone-800 rounded px-2 pt-2 text-zinc-500">
-                <CornerDownLeft size={10} />
-              </p>
-            </div>
-
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Keyboard shortcuts
+            <p className="text-[10px] bg-stone-800 rounded px-2 pt-2 text-zinc-500">
+              <CornerDownLeft size={10} />
             </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                Ctrl
-              </p>
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                K
-              </p>
-            </div>
+          </div>
 
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Search & command menu
+          <p className="text-center text-zinc-500 text-xs font-medium">
+            Keyboard shortcuts
+          </p>
+          <div className="flex space-x-1">
+            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
+              Ctrl
             </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                Ctrl
-              </p>
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                /
-              </p>
-            </div>
+            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
+              K
+            </p>
+          </div>
 
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Help menu
+          <p className="text-center text-zinc-500 text-xs font-medium">
+            Search & command menu
+          </p>
+          <div className="flex space-x-1">
+            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
+              Ctrl
             </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                ?
-              </p>
-            </div>
+            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
+              /
+            </p>
+          </div>
+
+          <p className="text-center text-zinc-500 text-xs font-medium">
+            Help menu
+          </p>
+          <div className="flex space-x-1">
+            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
+              ?
+            </p>
           </div>
         </div>
       </div>
