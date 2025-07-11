@@ -9,7 +9,7 @@ import Footer from "./components/Footer/Footer";
 import Navbar from "./components/Navbar/Navbar";
 import Sidebar from "./components/Sidebar/Sidebar";
 import GraphQLPanel from "./pages/GraphQLPanel";
-import RealTime from "./pages/RealTimePanel";
+import RealTimePanel from "./pages/RealTimePanel";
 import RestPanel from "./pages/RestPanel";
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
             <Routes>
               <Route path="/rest" element={<RestPanel />} />
               <Route path="/graphql" element={<GraphQLPanel />} />
-              <Route path="/realtime" element={<RealTime />} />
+              <Route path="/realtime" element={<RealTimePanel />} />
               <Route path="*" element={<Navigate to="/rest" replace />} />
             </Routes>
           </div>
