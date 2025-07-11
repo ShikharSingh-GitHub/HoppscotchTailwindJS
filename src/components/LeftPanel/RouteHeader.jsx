@@ -1,5 +1,14 @@
 import Tippy from "@tippyjs/react";
-import { ChevronDown, Eye, Layers, Plus, Save, X } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Eye,
+  Layers,
+  Plus,
+  Save,
+  Search,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import useRequestStore from "../../store/store";
 import IconButton from "../IconButton/IconButton";
@@ -30,8 +39,12 @@ const RouteHeader = () => {
 
   const [activeTab, setActiveTap] = useState(1);
   const containerRef = useRef(null);
-
   const [seeAllMethods, setSeeAllMethod] = useState(false);
+  const [showEnvironmentModal, setShowEnvironmentModal] = useState(false);
+  const [selectedEnvironment, setSelectedEnvironment] =
+    useState("Select Environment");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeEnvTab, setActiveEnvTab] = useState("personal");
 
   useEffect(() => {
     if (containerRef.current) {
@@ -98,6 +111,153 @@ const RouteHeader = () => {
     }
   };
 
+  // Environment Modal Component
+  const EnvironmentModal = () => (
+    <div className="w-80 bg-primary border border-zinc-700 rounded-lg shadow-lg">
+      {/* Search Input */}
+      <div className="p-3 border-b border-zinc-700">
+        <div className="relative border border-zinc-600 rounded">
+          <div className="flex items-center px-3 py-2">
+            <Search size={14} className="text-zinc-500 mr-2" />
+            <input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent text-xs text-white placeholder-zinc-500 outline-none flex-1"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* No Environment Option */}
+      <div className="p-2">
+        <button
+          onClick={() => {
+            setSelectedEnvironment("No environment");
+            setShowEnvironmentModal(false);
+          }}
+          className="w-full flex items-center justify-between px-4 py-3 rounded hover:bg-search-bg-hover transition-colors">
+          <div className="flex items-center">
+            <span className="text-sm font-semibold text-white">
+              No environment
+            </span>
+          </div>
+          {selectedEnvironment === "No environment" && (
+            <Check size={16} className="text-btn" />
+          )}
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-t border-zinc-700">
+        <div className="flex border-b border-zinc-700">
+          <button
+            onClick={() => setActiveEnvTab("personal")}
+            className={`flex-1 px-4 py-3 text-xs font-semibold ${
+              activeEnvTab === "personal"
+                ? "text-white border-b-2 border-btn bg-search-bg-hover"
+                : "text-zinc-400 hover:text-white hover:bg-search-bg-hover"
+            }`}>
+            Personal Environments
+          </button>
+          <button
+            onClick={() => setActiveEnvTab("workspace")}
+            className={`flex-1 px-4 py-3 text-xs font-semibold opacity-75 cursor-not-allowed ${
+              activeEnvTab === "workspace"
+                ? "text-white border-b-2 border-btn bg-search-bg-hover"
+                : "text-zinc-400"
+            }`}
+            disabled>
+            Workspace Environments
+          </button>
+        </div>
+
+        {/* Environment Content */}
+        <div className="p-4">
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="w-16 h-16 mb-4 flex items-center justify-center">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 512 512"
+                className="text-zinc-600"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M256 32L64 160L256 288L448 160L256 32Z"
+                  fill="currentColor"
+                  opacity="0.8"
+                />
+                <path
+                  d="M64 160V352L256 480L448 352V160"
+                  stroke="currentColor"
+                  strokeWidth="32"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                  opacity="0.6"
+                />
+                <path
+                  d="M256 288V480"
+                  stroke="currentColor"
+                  strokeWidth="32"
+                  strokeLinecap="round"
+                  opacity="0.6"
+                />
+                <path
+                  d="M160 128L256 80L352 128"
+                  stroke="currentColor"
+                  strokeWidth="24"
+                  strokeLinecap="round"
+                  opacity="0.4"
+                />
+                <path
+                  d="M64 160L256 288L448 160"
+                  stroke="currentColor"
+                  strokeWidth="24"
+                  strokeLinecap="round"
+                  opacity="0.5"
+                />
+                <circle
+                  cx="256"
+                  cy="160"
+                  r="8"
+                  fill="currentColor"
+                  opacity="0.8"
+                />
+                <circle
+                  cx="256"
+                  cy="288"
+                  r="6"
+                  fill="currentColor"
+                  opacity="0.6"
+                />
+                <circle
+                  cx="160"
+                  cy="128"
+                  r="4"
+                  fill="currentColor"
+                  opacity="0.4"
+                />
+                <circle
+                  cx="352"
+                  cy="128"
+                  r="4"
+                  fill="currentColor"
+                  opacity="0.4"
+                />
+              </svg>
+            </div>
+            <span className="text-xs text-zinc-500 text-center max-w-sm">
+              Environments are empty
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       {/* HEADERS and TAPS SECTION */}
@@ -152,18 +312,35 @@ const RouteHeader = () => {
             </button>
           </div>
 
-          <div className="col-span-4 flex justify-end lg:space-x-5 space-x-4 items-center h-[46px]">
-            <IconButton direction="top" name="Select environment">
-              <div className="flex items-center space-x-2">
+          <div className="col-span-5 flex justify-end lg:space-x-3 space-x-2 items-center h-[46px] pr-2">
+            {/* Environment Dropdown */}
+            <Tippy
+              content={<EnvironmentModal />}
+              visible={showEnvironmentModal}
+              onClickOutside={() => setShowEnvironmentModal(false)}
+              placement="bottom"
+              theme="popover"
+              interactive={true}
+              arrow={true}
+              maxWidth={350}
+              trigger="manual">
+              <button
+                onClick={() => setShowEnvironmentModal(!showEnvironmentModal)}
+                className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-search-bg transition-colors">
                 <div className="flex space-x-2 items-center">
-                  <Layers size={15} />
-                  <span className="text-[13px] font-semibold lg:flex hidden">
-                    Select environment
+                  <Layers size={15} className="text-zinc-400" />
+                  <span className="text-[13px] font-semibold lg:flex hidden text-zinc-300">
+                    {selectedEnvironment}
                   </span>
                 </div>
-                <ChevronDown size={17} />
-              </div>
-            </IconButton>
+                <ChevronDown
+                  size={15}
+                  className={`text-zinc-400 transition-transform ${
+                    showEnvironmentModal ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+            </Tippy>
 
             <IconButton name="Environment Quick Peek" direction="top">
               <Eye size={15} />
@@ -192,7 +369,7 @@ const RouteHeader = () => {
 
               {/* All Methods */}
               {seeAllMethods && (
-                <div className="absolute top-10 left-0 bg-search-bg-hover w-full rounded p-2 border border-search-bg">
+                <div className="absolute top-10 left-0 bg-search-bg-hover w-full rounded p-2 border border-search-bg z-10">
                   {methods.map((methods) => (
                     <button
                       onClick={() => {
@@ -250,9 +427,7 @@ const RouteHeader = () => {
                 <span className="text-[10px] font-semibold">Options</span>
               }
               placement="top"
-              theme="light"
-              // delay={0}
-            >
+              theme="light">
               <button className="bg-btn hover:bg-btn-hover px-2 h-full rounded-r">
                 <ChevronDown size={17} />
               </button>
@@ -287,9 +462,7 @@ const RouteHeader = () => {
                 <span className="text-[10px] font-semibold">Options</span>
               }
               placement="top"
-              theme="light"
-              // delay={0}
-            >
+              theme="light">
               <button className="flex justify-center items-center text-zinc-400 hover:text-white hover:bg-search-bg rounded-r h-full w-full">
                 <ChevronDown size={17} />
               </button>

@@ -11,6 +11,7 @@ import Sidebar from "./components/Sidebar/Sidebar";
 import GraphQLPanel from "./pages/GraphQLPanel";
 import RealTimePanel from "./pages/RealTimePanel";
 import RestPanel from "./pages/RestPanel";
+import SettingsPanel from "./pages/SettingsPanel";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               <Route path="/rest" element={<RestPanel />} />
               <Route path="/graphql" element={<GraphQLPanel />} />
               <Route path="/realtime" element={<RealTimePanel />} />
+              <Route path="/settings" element={<SettingsPanel />} />
               <Route path="*" element={<Navigate to="/rest" replace />} />
             </Routes>
           </div>
