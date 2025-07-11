@@ -5,6 +5,7 @@ import CodeMirror from "@uiw/react-codemirror";
 import {
   ChevronDown,
   CornerDownLeft,
+  ExternalLink,
   Eye,
   GripVertical,
   Layers,
@@ -13,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import KeyboardShortcuts from "../components/KeyboardShortcuts/KeyboardShortcuts";
 import QueryParameterComponent from "../components/LeftPanel/QueryParameter";
 import useRequestStore from "../store/store";
 
@@ -523,54 +525,7 @@ function RealTimePanel() {
       </div>
 
       <div class="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"></div>
-      <div className="flex justify-center mt-4">
-        <div className="grid grid-cols-2 gap-x-3 space-y-2">
-          <p className="text-center text-zinc-500 text-xs font-medium">
-            Send Request
-          </p>
-          <div className="flex space-x-1">
-            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-              Ctrl
-            </p>
-            <p className="text-[10px] bg-stone-800 rounded px-2 pt-2 text-zinc-500">
-              <CornerDownLeft size={10} />
-            </p>
-          </div>
-
-          <p className="text-center text-zinc-500 text-xs font-medium">
-            Keyboard shortcuts
-          </p>
-          <div className="flex space-x-1">
-            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-              Ctrl
-            </p>
-            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-              K
-            </p>
-          </div>
-
-          <p className="text-center text-zinc-500 text-xs font-medium">
-            Search & command menu
-          </p>
-          <div className="flex space-x-1">
-            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-              Ctrl
-            </p>
-            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-              /
-            </p>
-          </div>
-
-          <p className="text-center text-zinc-500 text-xs font-medium">
-            Help menu
-          </p>
-          <div className="flex space-x-1">
-            <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-              ?
-            </p>
-          </div>
-        </div>
-      </div>
+      <KeyboardShortcuts docUrl="https://docs.hoppscotch.io/documentation/features/realtime-api-testing" />
     </div>
   );
 }

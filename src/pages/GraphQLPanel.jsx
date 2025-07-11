@@ -6,6 +6,7 @@ import {
   BookOpen,
   ChevronDown,
   CornerDownLeft,
+  ExternalLink,
   Eye,
   Layers,
   Plus,
@@ -13,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import KeyboardShortcuts from "../components/KeyboardShortcuts/KeyboardShortcuts";
 import QueryParameterComponent from "../components/LeftPanel/QueryParameter";
 import GraphQLRightPanel from "../components/RightPanel/GraphQLRightPanel";
 import useRequestStore from "../store/store";
@@ -25,7 +27,8 @@ function GraphQLPanel() {
   const MIN_WIDTH = 25;
   const MAX_WIDTH = 75;
 
-  const startResizing = () => {
+  const startResizing = (e) => {
+    e.preventDefault(); // Add this to prevent default behavior
     isResizing.current = true;
     document.addEventListener("mousemove", handleResize);
     document.addEventListener("mouseup", stopResizing);
@@ -565,58 +568,12 @@ function GraphQLPanel() {
           {tap === "Headers" && <QueryParameterComponent />}
         </div>
         <div className="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"></div>
-        <div className="flex justify-center mt-4">
-          <div className="grid grid-cols-2 gap-x-3 space-y-2">
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Send Request
-            </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                Ctrl
-              </p>
-              <p className="text-[10px] bg-stone-800 rounded px-2 pt-2 text-zinc-500">
-                <CornerDownLeft size={10} />
-              </p>
-            </div>
-
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Keyboard shortcuts
-            </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                Ctrl
-              </p>
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                K
-              </p>
-            </div>
-
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Search & command menu
-            </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                Ctrl
-              </p>
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                /
-              </p>
-            </div>
-
-            <p className="text-center text-zinc-500 text-xs font-medium">
-              Help menu
-            </p>
-            <div className="flex space-x-1">
-              <p className="text-[10px] bg-stone-800 rounded px-2 py-1 text-zinc-500">
-                ?
-              </p>
-            </div>
-          </div>
-        </div>
+        <KeyboardShortcuts docUrl="https://docs.hoppscotch.io/documentation/features/graphql-api-testing" />
       </div>
       <div
         onMouseDown={startResizing}
         style={{ width: 4, cursor: "col-resize", background: "#27272a" }}
+        className="hover:bg-btn-hover transition-colors"
       />
       <div style={{ width: `${100 - leftWidth}%` }}>
         <GraphQLRightPanel />
