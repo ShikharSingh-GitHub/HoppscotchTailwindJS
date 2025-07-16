@@ -31,28 +31,33 @@ import GraphQLRightPanel from "../components/RightPanel/GraphQLRightPanel";
 import useRequestStore from "../store/store";
 
 function GraphQLPanel() {
-  const [leftWidth, setLeftWidth] = useState(75);
-  const [topHeight, setTopHeight] = useState(60); // Add vertical drag state
+  const [leftWidth, setLeftWidth] = useState(70); // Better default
+  const [topHeight, setTopHeight] = useState(60);
   const containerRef = useRef(null);
-  const verticalContainerRef = useRef(null); // Add ref for vertical container
+  const verticalContainerRef = useRef(null);
   const isResizing = useRef(false);
-  const isVerticalResizing = useRef(false); // Add vertical resizing state
+  const isVerticalResizing = useRef(false);
 
-  const MIN_WIDTH = 25;
-  const MAX_WIDTH = 75;
-  const MIN_HEIGHT = 30; // Minimum height for top section
-  const MAX_HEIGHT = 80; // Maximum height for top section
+  // More restrictive constraints like original site
+  const MIN_WIDTH = 40; // Minimum 40%
+  const MAX_WIDTH = 80; // Maximum 80%
+  const MIN_HEIGHT = 30;
+  const MAX_HEIGHT = 80;
 
-  // Horizontal resizing functions
+  // Horizontal resizing functions - Fixed with proper event handling
   const startResizing = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     isResizing.current = true;
     document.addEventListener("mousemove", handleResize);
     document.addEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
   };
 
   const handleResize = (e) => {
     if (!isResizing.current || !containerRef.current) return;
+    e.preventDefault();
     const containerRect = containerRef.current.getBoundingClientRect();
     const containerWidth = containerRect.width;
     let newLeftWidth =
@@ -66,17 +71,24 @@ function GraphQLPanel() {
     isResizing.current = false;
     document.removeEventListener("mousemove", handleResize);
     document.removeEventListener("mouseup", stopResizing);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
   };
 
   // Vertical resizing functions
-  const startVerticalResizing = () => {
+  const startVerticalResizing = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     isVerticalResizing.current = true;
     document.addEventListener("mousemove", handleVerticalResize);
     document.addEventListener("mouseup", stopVerticalResizing);
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
   };
 
   const handleVerticalResize = (e) => {
     if (!isVerticalResizing.current || !verticalContainerRef.current) return;
+    e.preventDefault();
     const containerRect = verticalContainerRef.current.getBoundingClientRect();
     const containerHeight = containerRect.height;
     let newTopHeight =
@@ -90,17 +102,19 @@ function GraphQLPanel() {
     isVerticalResizing.current = false;
     document.removeEventListener("mousemove", handleVerticalResize);
     document.removeEventListener("mouseup", stopVerticalResizing);
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
   };
 
   const [history, setHistory] = useState([
     {
       id: 1,
       title: "Untitled",
-      url: "https://echo.hoppscotch.io",
+      url: "https://echo.hoppscotch.io/graphql",
     },
   ]);
 
-  const [activeTab, setActiveTap] = useState(1);
+  const [activeTab, setActiveTab] = useState(1);
   const tabContainerRef = useRef(null);
 
   useEffect(() => {
@@ -119,15 +133,19 @@ function GraphQLPanel() {
     const newId = history.length + 1;
     setHistory([
       ...history,
-      { id: newId, method: "GET", title: "Untitled", url: "" },
+      {
+        id: newId,
+        title: "Untitled",
+        url: "https://echo.hoppscotch.io/graphql",
+      },
     ]);
-    setActiveTap(newId);
+    setActiveTab(newId);
   };
 
   // Remove History
   const removeHistory = (id, index) => {
     setHistory(history.filter((h) => h.id !== id));
-    setActiveTap(index > 1 ? index - 1 : 1);
+    setActiveTab(index > 1 ? index - 1 : 1);
   };
 
   const tabs = [
@@ -137,10 +155,8 @@ function GraphQLPanel() {
     { id: 4, name: "Authorization" },
   ];
 
-  // Add this missing state for tab management
   const [tap, setTab] = useState("Query");
 
-  // Add state for Query and Variables content - Updated Variables content
   const [queryContent, setQueryContent] = useState(`query Request {
   method
   url
@@ -154,7 +170,7 @@ function GraphQLPanel() {
   "id": "1"
 }`);
 
-  // Enhanced theme for better GraphQL/JSON support - Updated colors to match original
+  // Enhanced theme for better GraphQL/JSON support
   const myTheme = createTheme({
     theme: "dark",
     settings: {
@@ -170,31 +186,30 @@ function GraphQLPanel() {
       gutterBorder: "#2a2a2a",
     },
     styles: [
-      // GraphQL Keywords (query, mutation, subscription, fragment, etc.)
-      { tag: "keyword", color: "#C586C0" }, // Purple for GraphQL keywords
-      { tag: "name", color: "#9CDCFE" }, // Light blue for field names
-      { tag: "typeName", color: "#4EC9B0" }, // Teal for type names
-      { tag: "fieldName", color: "#9CDCFE" }, // Light blue for field names
-      { tag: "argumentName", color: "#9CDCFE" }, // Light blue for argument names
-      { tag: "variableName", color: "#4FC1FF" }, // Bright blue for variables
-      { tag: "directiveName", color: "#DCDCAA" }, // Yellow for directives
-      { tag: "string", color: "#CE9178" }, // Orange for strings
-      { tag: "number", color: "#B5CEA8" }, // Light green for numbers
-      { tag: "boolean", color: "#569CD6" }, // Blue for booleans
-      { tag: "null", color: "#569CD6" }, // Blue for null
-      { tag: "comment", color: "#6A9955" }, // Green for comments
-      { tag: "propertyName", color: "#9CDCFE" }, // Light blue for JSON property names
-      { tag: "operator", color: "#D4D4D4" }, // Light gray for operators
-      { tag: "punctuation", color: "#D4D4D4" }, // Light gray for punctuation
-      { tag: "bracket", color: "#FFD700" }, // Gold for brackets
-      { tag: "brace", color: "#DA70D6" }, // Pink for braces
-      { tag: "angleBracket", color: "#DA70D6" }, // Pink for angle brackets
-      { tag: "definition", color: "#DCDCAA" }, // Yellow for definitions
-      { tag: "quote", color: "#CE9178" }, // Orange for quotes
+      { tag: "keyword", color: "#C586C0" },
+      { tag: "name", color: "#9CDCFE" },
+      { tag: "typeName", color: "#4EC9B0" },
+      { tag: "fieldName", color: "#9CDCFE" },
+      { tag: "argumentName", color: "#9CDCFE" },
+      { tag: "variableName", color: "#4FC1FF" },
+      { tag: "directiveName", color: "#DCDCAA" },
+      { tag: "string", color: "#CE9178" },
+      { tag: "number", color: "#B5CEA8" },
+      { tag: "boolean", color: "#569CD6" },
+      { tag: "null", color: "#569CD6" },
+      { tag: "comment", color: "#6A9955" },
+      { tag: "propertyName", color: "#9CDCFE" },
+      { tag: "operator", color: "#D4D4D4" },
+      { tag: "punctuation", color: "#D4D4D4" },
+      { tag: "bracket", color: "#FFD700" },
+      { tag: "brace", color: "#DA70D6" },
+      { tag: "angleBracket", color: "#DA70D6" },
+      { tag: "definition", color: "#DCDCAA" },
+      { tag: "quote", color: "#CE9178" },
     ],
   });
 
-  // GraphQL extensions - Updated with better syntax highlighting
+  // GraphQL extensions
   const graphqlExtensions = [
     graphql(),
     lineNumbers(),
@@ -204,55 +219,26 @@ function GraphQLPanel() {
     highlightSelectionMatches(),
     keymap.of([...defaultKeymap, ...searchKeymap]),
     EditorView.theme({
-      "&": {
-        fontSize: "12px", // Slightly smaller font
-      },
-      ".cm-content": {
-        padding: "12px", // Reduced padding
-        minHeight: "250px", // Reduced height
-      },
-      ".cm-editor": {
-        borderRadius: "0px",
-      },
-      ".cm-focused": {
-        outline: "none",
-      },
+      "&": { fontSize: "12px" },
+      ".cm-content": { padding: "12px", minHeight: "250px" },
+      ".cm-editor": { borderRadius: "0px" },
+      ".cm-focused": { outline: "none" },
       ".cm-gutters": {
         backgroundColor: "#1e1e1e",
         borderRight: "1px solid #2a2a2a",
       },
-      ".cm-lineNumbers": {
-        color: "#858585",
-        fontSize: "10px", // Smaller line numbers
-      },
-      ".cm-activeLine": {
-        backgroundColor: "#2a2a2a",
-      },
-      ".cm-selectionBackground": {
-        backgroundColor: "#264f78 !important",
-      },
-      // GraphQL specific styling
-      ".cm-keyword": {
-        color: "#C586C0 !important",
-        fontWeight: "bold",
-      },
-      ".cm-string": {
-        color: "#CE9178 !important",
-      },
-      ".cm-number": {
-        color: "#B5CEA8 !important",
-      },
-      ".cm-variableName": {
-        color: "#4FC1FF !important",
-      },
-      ".cm-comment": {
-        color: "#6A9955 !important",
-        fontStyle: "italic",
-      },
+      ".cm-lineNumbers": { color: "#858585", fontSize: "10px" },
+      ".cm-activeLine": { backgroundColor: "#2a2a2a" },
+      ".cm-selectionBackground": { backgroundColor: "#264f78 !important" },
+      ".cm-keyword": { color: "#C586C0 !important", fontWeight: "bold" },
+      ".cm-string": { color: "#CE9178 !important" },
+      ".cm-number": { color: "#B5CEA8 !important" },
+      ".cm-variableName": { color: "#4FC1FF !important" },
+      ".cm-comment": { color: "#6A9955 !important", fontStyle: "italic" },
     }),
   ];
 
-  // JSON extensions for Variables - Updated with better syntax highlighting
+  // JSON extensions for Variables
   const jsonExtensions = [
     json(),
     lineNumbers(),
@@ -262,52 +248,23 @@ function GraphQLPanel() {
     highlightSelectionMatches(),
     keymap.of([...defaultKeymap, ...searchKeymap]),
     EditorView.theme({
-      "&": {
-        fontSize: "12px", // Slightly smaller font
-      },
-      ".cm-content": {
-        padding: "12px", // Reduced padding
-        minHeight: "150px", // Reduced height
-      },
-      ".cm-editor": {
-        borderRadius: "0px",
-      },
-      ".cm-focused": {
-        outline: "none",
-      },
+      "&": { fontSize: "12px" },
+      ".cm-content": { padding: "12px", minHeight: "150px" },
+      ".cm-editor": { borderRadius: "0px" },
+      ".cm-focused": { outline: "none" },
       ".cm-gutters": {
         backgroundColor: "#1e1e1e",
         borderRight: "1px solid #2a2a2a",
       },
-      ".cm-lineNumbers": {
-        color: "#858585",
-        fontSize: "10px", // Smaller line numbers
-      },
-      ".cm-activeLine": {
-        backgroundColor: "#2a2a2a",
-      },
-      ".cm-selectionBackground": {
-        backgroundColor: "#264f78 !important",
-      },
-      // JSON specific styling
-      ".cm-property": {
-        color: "#9CDCFE !important",
-      },
-      ".cm-string": {
-        color: "#CE9178 !important",
-      },
-      ".cm-number": {
-        color: "#B5CEA8 !important",
-      },
-      ".cm-keyword": {
-        color: "#569CD6 !important",
-      },
-      ".cm-punctuation": {
-        color: "#D4D4D4 !important",
-      },
-      ".cm-bracket": {
-        color: "#FFD700 !important",
-      },
+      ".cm-lineNumbers": { color: "#858585", fontSize: "10px" },
+      ".cm-activeLine": { backgroundColor: "#2a2a2a" },
+      ".cm-selectionBackground": { backgroundColor: "#264f78 !important" },
+      ".cm-property": { color: "#9CDCFE !important" },
+      ".cm-string": { color: "#CE9178 !important" },
+      ".cm-number": { color: "#B5CEA8 !important" },
+      ".cm-keyword": { color: "#569CD6 !important" },
+      ".cm-punctuation": { color: "#D4D4D4 !important" },
+      ".cm-bracket": { color: "#FFD700 !important" },
     }),
   ];
 
@@ -368,7 +325,7 @@ function GraphQLPanel() {
                 {history.map((h, index) => (
                   <div
                     key={h.id}
-                    onClick={() => setActiveTap(index + 1)}
+                    onClick={() => setActiveTab(index + 1)}
                     className={`flex items-center justify-between px-5 space-x-4 w-48 h-full  text-center cursor-pointer ${
                       activeTab === index + 1
                         ? "bg-primary border-t-[3px] border-btn text-white"
@@ -436,9 +393,9 @@ function GraphQLPanel() {
               <>
                 <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
                   <label className="font-semibold text-zinc-500">Query</label>
-                  {/* Button group - Exact match to original Hoppscotch */}
+                  {/* All your existing button group code... */}
                   <div className="flex">
-                    {/* Request Button (Play icon with accent color) */}
+                    {/* Request Button */}
                     <button
                       aria-label="button"
                       role="button"
@@ -533,7 +490,7 @@ function GraphQLPanel() {
                       </span>
                     </a>
 
-                    {/* Clear All Button (Trash icon) */}
+                    {/* Clear All Button */}
                     <button
                       aria-label="button"
                       role="button"
@@ -558,7 +515,7 @@ function GraphQLPanel() {
                       </span>
                     </button>
 
-                    {/* Share Button (with accent color) */}
+                    {/* Share Button */}
                     <button
                       aria-label="button"
                       role="button"
@@ -589,13 +546,12 @@ function GraphQLPanel() {
                       </span>
                     </button>
 
-                    {/* Prettify Button (with accent color) */}
+                    {/* Prettify Button */}
                     <button
                       aria-label="button"
                       role="button"
                       onClick={() => {
                         try {
-                          // Simple GraphQL query formatting
                           const formatted = queryContent
                             .replace(/\s+/g, " ")
                             .replace(/\{\s*/g, "{\n  ")
@@ -688,7 +644,7 @@ function GraphQLPanel() {
                     Variables
                   </label>
 
-                  {/* Button group - Fixed to match original Hoppscotch */}
+                  {/* Button group */}
                   <div className="flex">
                     {/* Prettify Variables Button */}
                     <button
@@ -1072,10 +1028,10 @@ function GraphQLPanel() {
           </div>
         </div>
 
-        {/* Vertical Drag Handle */}
+        {/* Vertical Drag Handle - More subtle like original */}
         <div
           onMouseDown={startVerticalResizing}
-          className="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors flex-shrink-0"
+          className="h-[2px] bg-zinc-700/50 cursor-row-resize hover:bg-btn transition-all duration-200 hover:h-[4px] flex-shrink-0"
         />
 
         {/* Bottom Section - Keyboard Shortcuts */}
@@ -1088,11 +1044,14 @@ function GraphQLPanel() {
         </div>
       </div>
 
-      {/* Horizontal Drag Handle */}
+      {/* Horizontal Drag Handle - Much more subtle and properly positioned */}
       <div
         onMouseDown={startResizing}
-        style={{ width: 4, cursor: "col-resize", background: "#27272a" }}
-        className="hover:bg-btn-hover transition-colors"
+        className="w-[2px] cursor-col-resize bg-zinc-700/50 hover:bg-btn transition-all duration-200 hover:w-[4px] flex-shrink-0 relative z-50"
+        style={{
+          minWidth: "2px",
+          maxWidth: "4px",
+        }}
       />
 
       {/* Right Panel */}

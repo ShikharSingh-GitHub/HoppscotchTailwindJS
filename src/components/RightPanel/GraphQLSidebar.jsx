@@ -32,7 +32,7 @@ const GraphQLSidebar = ({ activePanel, setActivePanel }) => {
   ];
 
   return (
-    <div className="tabs relative border-gray-700/30 border-r overflow-x-auto flex-shrink-0 bg-primary z-10 h-full">
+    <div className="tabs relative overflow-x-auto flex-shrink-0 bg-primary z-10 h-full">
       <div className="flex flex-1">
         <div className="flex flex-1 justify-between flex-col">
           <div className="flex flex-1 flex-col space-y-2 p-2">

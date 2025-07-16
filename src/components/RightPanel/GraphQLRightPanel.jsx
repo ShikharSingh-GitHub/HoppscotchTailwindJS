@@ -204,14 +204,16 @@ const GraphQLRightPanel = () => {
 
   return (
     <div className="flex h-full w-full">
-      <div className="w-13 flex flex-col items-center pt-1 border-r border-gray-700/30">
+      {/* Sidebar */}
+      <div className="w-13 flex flex-col items-center pt-1">
         <GraphQLSidebar
           activePanel={activePanel}
           setActivePanel={setActivePanel}
         />
       </div>
 
-      <div className="w-full flex flex-col">
+      {/* Content Panel */}
+      <div className="w-full flex flex-col border-l border-gray-700/30">
         <div className="flex items-center border-b border-gray-700/30 pb-2 pt-2 px-3">
           <p className="text-[11px] text-stone-500">Personal Workspace</p>
           <p>
