@@ -31,20 +31,18 @@ import GraphQLRightPanel from "../components/RightPanel/GraphQLRightPanel";
 import useRequestStore from "../store/store";
 
 function GraphQLPanel() {
-  const [leftWidth, setLeftWidth] = useState(70); // Better default
+  const [leftWidth, setLeftWidth] = useState(70);
   const [topHeight, setTopHeight] = useState(60);
   const containerRef = useRef(null);
   const verticalContainerRef = useRef(null);
   const isResizing = useRef(false);
   const isVerticalResizing = useRef(false);
 
-  // More restrictive constraints like original site
-  const MIN_WIDTH = 40; // Minimum 40%
-  const MAX_WIDTH = 80; // Maximum 80%
+  const MIN_WIDTH = 40;
+  const MAX_WIDTH = 80;
   const MIN_HEIGHT = 30;
   const MAX_HEIGHT = 80;
 
-  // Horizontal resizing functions - Fixed with proper event handling
   const startResizing = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -75,7 +73,6 @@ function GraphQLPanel() {
     document.body.style.userSelect = "";
   };
 
-  // Vertical resizing functions
   const startVerticalResizing = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -128,7 +125,6 @@ function GraphQLPanel() {
 
   const { requested } = useRequestStore();
 
-  // Add History
   const addHistory = () => {
     const newId = history.length + 1;
     setHistory([
@@ -142,7 +138,6 @@ function GraphQLPanel() {
     setActiveTab(newId);
   };
 
-  // Remove History
   const removeHistory = (id, index) => {
     setHistory(history.filter((h) => h.id !== id));
     setActiveTab(index > 1 ? index - 1 : 1);
@@ -170,7 +165,6 @@ function GraphQLPanel() {
   "id": "1"
 }`);
 
-  // Enhanced theme for better GraphQL/JSON support
   const myTheme = createTheme({
     theme: "dark",
     settings: {
@@ -209,7 +203,6 @@ function GraphQLPanel() {
     ],
   });
 
-  // GraphQL extensions
   const graphqlExtensions = [
     graphql(),
     lineNumbers(),
@@ -238,7 +231,6 @@ function GraphQLPanel() {
     }),
   ];
 
-  // JSON extensions for Variables
   const jsonExtensions = [
     json(),
     lineNumbers(),
@@ -270,7 +262,6 @@ function GraphQLPanel() {
 
   const [authType, setAuthType] = useState("Inherit");
 
-  // Authorization types data
   const authTypes = [
     { id: 1, name: "Inherit", isSelected: true },
     { id: 2, name: "None", isSelected: false },
@@ -294,44 +285,47 @@ function GraphQLPanel() {
         <div
           style={{ height: `${topHeight}%` }}
           className="overflow-hidden flex flex-col">
-          {/* URL Input */}
-          <div className="lg:px-4 px-2 py-3">
-            <div className="flex h-9 gap-x-2">
-              <div className="w-[85%] grid bg-search-bg-hover rounded-sm">
+          {/* URL Input - Fixed height and alignment */}
+          <div className="px-4 py-2">
+            <div className="flex h-8 gap-x-2">
+              <div className="w-[85%] grid bg-search-bg-hover rounded">
                 <div className="w-full">
                   <input
                     type="text"
-                    className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
+                    className="h-8 w-full text-xs font-medium px-3 focus:outline-none rounded placeholder:text-[10px] placeholder:text-zinc-500 bg-transparent"
                     value={"https://echo.hoppscotch.io/graphql"}
+                    placeholder="Enter GraphQL endpoint URL"
                   />
                 </div>
               </div>
-              <div className="w-[15%] flex lg:mt-0 mt-2 lg:h-full h-8 justify-between items-center">
+              <div className="w-[15%] flex items-center">
                 <button
                   onClick={() => requested()}
-                  className="px-4 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-sm">
+                  className="px-3 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-8 rounded">
                   Connect
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="bg-search-bg-hover h-[46px] pe-3">
-            <div className="w-full flex items-center lg:h-[50px] h-[40px] relative overflow-y-hidden">
+          {/* Tabs - Fixed height and alignment */}
+          <div className="bg-search-bg-hover h-10 px-3">
+            <div className="w-full flex items-center h-10 relative">
               <div
-                className="flex items-center h-[50px] overflow-x-auto mt-3"
+                className="flex items-center h-full overflow-x-auto"
                 ref={tabContainerRef}>
                 {history.map((h, index) => (
                   <div
                     key={h.id}
                     onClick={() => setActiveTab(index + 1)}
-                    className={`flex items-center justify-between px-5 space-x-4 w-48 h-full  text-center cursor-pointer ${
+                    className={`flex items-center justify-between px-4 space-x-3 min-w-[160px] h-full text-center cursor-pointer ${
                       activeTab === index + 1
-                        ? "bg-primary border-t-[3px] border-btn text-white"
+                        ? "bg-primary border-t-2 border-btn text-white"
                         : "text-zinc-400 hover:bg-search-bg"
                     } group`}>
-                    <p className="font-semibold text-[12px]">{h.title}</p>
+                    <p className="font-semibold text-[11px] truncate flex-1">
+                      {h.title}
+                    </p>
                     {history.length > 1 ? (
                       <Tippy
                         content={
@@ -346,12 +340,12 @@ function GraphQLPanel() {
                             e.stopPropagation();
                             removeHistory(h.id, index + 1);
                           }}
-                          className="sticky right-0 lg:invisible group-hover:visible">
-                          <X size={14} />
+                          className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <X size={12} />
                         </button>
                       </Tippy>
                     ) : (
-                      <button></button>
+                      <div className="w-3"></div>
                     )}
                   </div>
                 ))}
@@ -361,29 +355,27 @@ function GraphQLPanel() {
                 placement="top"
                 theme="light"
                 delay={300}>
-                <button onClick={addHistory} className="ms-4">
-                  <Plus size={17} />
+                <button onClick={addHistory} className="ml-2 p-1">
+                  <Plus size={14} />
                 </button>
               </Tippy>
             </div>
           </div>
 
-          {/* Sub Tabs */}
-          <div className="flex justify-between overflow-scroll px-4 space-x-4 mt-3 scrollbar-hide pb-[8px]">
-            <div className="flex space-x-7">
-              {tabs.map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setTab(t.name)}
-                  className={`lg:text-[13px] text-[12px] font-semibold hover:text-white ${
-                    tap === t.name
-                      ? "underline underline-offset-10 decoration-btn decoration-2 text-white"
-                      : "text-zinc-500"
-                  }`}>
-                  {t.name}
-                </button>
-              ))}
-            </div>
+          {/* Sub Tabs - Fixed sizing and spacing */}
+          <div className="flex px-4 space-x-6 py-2 border-b border-zinc-800/30">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.name)}
+                className={`text-xs font-semibold hover:text-white transition-colors ${
+                  tap === t.name
+                    ? "text-white border-b-2 border-btn pb-2"
+                    : "text-zinc-500 pb-2"
+                }`}>
+                {t.name}
+              </button>
+            ))}
           </div>
 
           {/* Tab Content */}
@@ -391,42 +383,37 @@ function GraphQLPanel() {
             {/* Query Tab */}
             {tap === "Query" && (
               <>
-                <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                  <label className="font-semibold text-zinc-500">Query</label>
-                  {/* All your existing button group code... */}
-                  <div className="flex">
-                    {/* Request Button */}
+                <div className="flex items-center justify-between border-b border-zinc-800/80 bg-primary h-10 px-4">
+                  <label className="text-xs font-semibold text-zinc-500">
+                    Query
+                  </label>
+
+                  <div className="flex items-center">
+                    {/* Request Button - Blue accent */}
                     <button
-                      aria-label="button"
-                      role="button"
                       onClick={() => {
                         console.log("Executing GraphQL Query:", queryContent);
                         console.log("With Variables:", variablesContent);
                       }}
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 rounded px-4 py-2 rounded-none text-btn hover:text-btn-hover"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons mr-2">
-                          <path
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="m6 3l14 9l-14 9z"></path>
-                        </svg>
-                        <div className="truncate max-w-[16rem]">Request</div>
-                      </span>
+                      className="flex items-center px-3 py-1 text-xs font-semibold text-btn hover:text-btn-hover transition-colors">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="15"
+                        height="15"
+                        className="mr-1">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="m6 3l14 9l-14 9z"></path>
+                      </svg>
+                      Request
                     </button>
 
                     {/* Save Button */}
                     <button
-                      aria-label="button"
-                      role="button"
                       onClick={() => {
                         const queryData = {
                           query: queryContent,
@@ -439,155 +426,107 @@ function GraphQLPanel() {
                         );
                         console.log("Query saved:", queryData);
                       }}
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 rounded px-4 py-2 rounded-none"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons mr-2">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
-                            <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7M7 3v4a1 1 0 0 0 1 1h7"></path>
-                          </g>
-                        </svg>
-                        <div className="truncate max-w-[16rem]">Save</div>
-                      </span>
+                      className="flex items-center px-3 py-1 text-xs font-semibold text-zinc-400 hover:text-white transition-colors">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="15"
+                        height="15"
+                        className="mr-1">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path>
+                          <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7M7 3v4a1 1 0 0 0 1 1h7"></path>
+                        </g>
+                      </svg>
+                      Save
                     </button>
 
-                    {/* Help Link */}
+                    {/* Help/Documentation Button */}
                     <a
-                      aria-label="Link"
                       href="https://docs.hoppscotch.io/documentation/features/graphql-api-testing"
                       target="_blank"
                       rel="noopener"
-                      role="button"
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
-                          </g>
-                        </svg>
-                        <div className="truncate max-w-[16rem]"></div>
-                      </span>
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
+                        </g>
+                      </svg>
                     </a>
 
-                    {/* Clear All Button */}
+                    {/* Delete/Trash Button */}
                     <button
-                      aria-label="button"
-                      role="button"
                       onClick={() => setQueryContent("")}
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons">
-                          <path
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"></path>
-                        </svg>
-                        <div className="truncate max-w-[16rem]"></div>
-                      </span>
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"></path>
+                      </svg>
                     </button>
 
-                    {/* Share Button */}
+                    {/* Prettify/Format Button - Blue accent */}
                     <button
-                      aria-label="button"
-                      role="button"
-                      onClick={() => {
-                        const shareUrl = `${window.location.origin}${
-                          window.location.pathname
-                        }?query=${encodeURIComponent(queryContent)}`;
-                        navigator.clipboard.writeText(shareUrl);
-                        console.log("Share URL copied:", shareUrl);
-                      }}
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons">
-                          <path
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M15 4V2m0 14v-2M8 9h2m10 0h2m-4.2 2.8L19 13m-4-4h.01m2.79-2.8L19 5M3 21l9-9m.2-5.8L11 5"></path>
-                        </svg>
-                        <div className="truncate max-w-[16rem]"></div>
-                      </span>
-                    </button>
-
-                    {/* Prettify Button */}
-                    <button
-                      aria-label="button"
-                      role="button"
                       onClick={() => {
                         try {
+                          // Simple GraphQL prettify - add proper spacing
                           const formatted = queryContent
-                            .replace(/\s+/g, " ")
-                            .replace(/\{\s*/g, "{\n  ")
-                            .replace(/\s*\}/g, "\n}")
-                            .replace(/,\s*/g, ",\n  ");
+                            .replace(/\{/g, " {\n  ")
+                            .replace(/\}/g, "\n}")
+                            .replace(/,/g, ",\n  ")
+                            .replace(/\n\s*\n/g, "\n");
                           setQueryContent(formatted);
                         } catch (error) {
-                          console.error("Error formatting query:", error);
+                          console.error("Failed to format:", error);
                         }
                       }}
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 p-2 text-btn"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
-                            <path d="m16 16l-2 2l2 2M3 18h7"></path>
-                          </g>
-                        </svg>
-                        <div className="truncate max-w-[16rem]"></div>
-                      </span>
+                      className="p-1 text-btn hover:text-btn-hover transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
+                          <path d="m16 16l-2 2l2 2M3 18h7"></path>
+                        </g>
+                      </svg>
+                    </button>
+
+                    {/* Wand/Magic Button */}
+                    <button
+                      onClick={() => {
+                        console.log("Magic wand action");
+                      }}
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 4V2m0 14v-2M8 9h2m10 0h2m-4.2 2.8L19 13m-4-4h.01m2.79-2.8L19 5M3 21l9-9m.2-5.8L11 5"></path>
+                      </svg>
                     </button>
 
                     {/* Copy Button */}
                     <button
-                      aria-label="button"
-                      role="button"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(queryContent);
@@ -596,36 +535,29 @@ function GraphQLPanel() {
                           console.error("Failed to copy:", error);
                         }
                       }}
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-zinc-300 focus-visible:text-zinc-300 p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1.2em"
-                          height="1.2em"
-                          className="svg-icons">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <rect
-                              width="14"
-                              height="14"
-                              x="8"
-                              y="8"
-                              rx="2"
-                              ry="2"></rect>
-                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                          </g>
-                        </svg>
-                        <div className="truncate max-w-[16rem]"></div>
-                      </span>
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <rect
+                            width="15"
+                            height="15"
+                            x="8"
+                            y="8"
+                            rx="2"
+                            ry="2"></rect>
+                          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                        </g>
+                      </svg>
                     </button>
                   </div>
                 </div>
-                <div className="h-full overflow-y-auto border-b border-zinc-800/80">
+
+                <div className="h-full overflow-y-auto">
                   <CodeMirror
                     value={queryContent}
                     onChange={(value) => setQueryContent(value)}
@@ -639,17 +571,48 @@ function GraphQLPanel() {
 
             {tap === "Variables" && (
               <>
-                <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                  <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
+                <div className="flex items-center justify-between border-b border-zinc-800/80 bg-primary h-10 px-4">
+                  <label className="text-xs font-semibold text-zinc-500">
                     Variables
                   </label>
 
-                  {/* Button group */}
-                  <div className="flex">
-                    {/* Prettify Variables Button */}
+                  <div className="flex items-center">
+                    {/* Help/Documentation Button */}
+                    <a
+                      href="https://docs.hoppscotch.io/documentation/features/graphql-api-testing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
+                        </g>
+                      </svg>
+                    </a>
+
+                    {/* Delete/Clear Variables Button */}
                     <button
-                      aria-label="Prettify Variables"
-                      role="button"
+                      onClick={() => setVariablesContent("{}")}
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"></path>
+                      </svg>
+                    </button>
+
+                    {/* Prettify Variables Button - Blue accent */}
+                    <button
                       onClick={() => {
                         try {
                           const parsed = JSON.parse(variablesContent);
@@ -659,32 +622,39 @@ function GraphQLPanel() {
                           console.error("Invalid JSON:", error);
                         }
                       }}
-                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1em"
-                          height="1em"
-                          className="svg-icons mr-2">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
-                            <path d="m16 16l-2 2l2 2M3 18h7"></path>
-                          </g>
-                        </svg>
-                        <div className="truncate text-[13px]">Prettify</div>
-                      </span>
+                      className="p-1 text-btn hover:text-btn-hover transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
+                          <path d="m16 16l-2 2l2 2M3 18h7"></path>
+                        </g>
+                      </svg>
+                    </button>
+
+                    {/* Magic Wand Button */}
+                    <button
+                      onClick={() => {
+                        console.log("Variables magic wand action");
+                      }}
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 4V2m0 14v-2M8 9h2m10 0h2m-4.2 2.8L19 13m-4-4h.01m2.79-2.8L19 5M3 21l9-9m.2-5.8L11 5"></path>
+                      </svg>
                     </button>
 
                     {/* Copy Variables Button */}
                     <button
-                      aria-label="Copy Variables"
-                      role="button"
                       onClick={async () => {
                         try {
                           await navigator.clipboard.writeText(variablesContent);
@@ -693,76 +663,29 @@ function GraphQLPanel() {
                           console.error("Failed to copy:", error);
                         }
                       }}
-                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1em"
-                          height="1em"
-                          className="svg-icons mr-2">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <rect
-                              width="14"
-                              height="14"
-                              x="8"
-                              y="8"
-                              rx="2"
-                              ry="2"></rect>
-                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                          </g>
-                        </svg>
-                        <div className="truncate text-[13px]">Copy</div>
-                      </span>
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <rect
+                            width="15"
+                            height="15"
+                            x="8"
+                            y="8"
+                            rx="2"
+                            ry="2"></rect>
+                          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                        </g>
+                      </svg>
                     </button>
-
-                    {/* Clear Variables Button */}
-                    <button
-                      aria-label="Clear Variables"
-                      role="button"
-                      onClick={() => setVariablesContent("{}")}
-                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <Trash size={16} className="mr-2" />
-                        <div className="truncate text-[13px]">Clear</div>
-                      </span>
-                    </button>
-
-                    {/* Help Link */}
-                    <a
-                      href="https://docs.hoppscotch.io/documentation/features/graphql-api-testing"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      role="button"
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap text-zinc-400 hover:text-white p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1em"
-                          height="1em"
-                          className="svg-icons">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
-                          </g>
-                        </svg>
-                      </span>
-                    </a>
                   </div>
                 </div>
-                <div className="h-full overflow-y-auto border-b border-zinc-800/80">
+
+                <div className="h-full overflow-y-auto">
                   <CodeMirror
                     value={variablesContent}
                     onChange={(value) => setVariablesContent(value)}
@@ -778,248 +701,157 @@ function GraphQLPanel() {
 
             {tap === "Authorization" && (
               <>
-                <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                  <span className="flex items-center">
-                    <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4 truncate">
+                <div className="flex items-center justify-between border-b border-zinc-800/80 bg-primary h-10 px-4">
+                  <div className="flex items-center">
+                    <label className="text-xs font-semibold text-zinc-500 mr-3">
                       Authorization Type
                     </label>
 
-                    {/* Authorization Type Dropdown */}
-                    <div className="relative ml-2">
-                      <Tippy
-                        content={
-                          <div className="flex flex-col focus:outline-none bg-zinc-800 border border-zinc-700 rounded-md shadow-xl py-1 min-w-[200px]">
-                            {authTypes.map((type) => (
-                              <button
-                                key={type.id}
-                                onClick={() => setAuthType(type.name)}
-                                role="menuitem"
-                                className="inline-flex items-center flex-shrink-0 px-4 py-2 transition hover:bg-zinc-700 focus:outline-none focus-visible:bg-zinc-700 flex-1 text-left rounded-none">
-                                <span className="inline-flex items-center">
-                                  {type.name === authType ? (
-                                    <div className="w-5 h-5 mr-4 text-btn">
-                                      <svg
-                                        viewBox="0 0 24 24"
-                                        width="1.2em"
-                                        height="1.2em"
-                                        className="opacity-75">
-                                        <g
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth="2">
-                                          <circle
-                                            cx="12"
-                                            cy="12"
-                                            r="10"></circle>
-                                          <circle
-                                            cx="12"
-                                            cy="12"
-                                            r="1"></circle>
-                                        </g>
-                                      </svg>
-                                    </div>
-                                  ) : (
-                                    <Circle
-                                      size={20}
-                                      className="opacity-75 mr-4 text-zinc-500"
+                    <Tippy
+                      content={
+                        <div className="flex flex-col bg-zinc-800 border border-zinc-700 rounded-md shadow-xl py-1 min-w-[180px]">
+                          {authTypes.map((type) => (
+                            <button
+                              key={type.id}
+                              onClick={() => setAuthType(type.name)}
+                              className="flex items-center px-3 py-2 text-xs hover:bg-zinc-700 transition-colors">
+                              {type.name === authType ? (
+                                <div className="w-3 h-3 mr-3 text-btn">
+                                  <svg
+                                    viewBox="0 0 24 24"
+                                    width="15"
+                                    height="15">
+                                    <circle
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
                                     />
-                                  )}
-                                </span>
-                                <div className="inline-flex items-start flex-1 truncate">
-                                  <div className="font-semibold truncate max-w-[16rem] text-zinc-300 text-sm hover:text-white">
-                                    {type.name}
-                                  </div>
+                                    <circle
+                                      cx="12"
+                                      cy="12"
+                                      r="1"
+                                      fill="currentColor"
+                                    />
+                                  </svg>
                                 </div>
-                              </button>
-                            ))}
-                          </div>
-                        }
-                        interactive={true}
-                        trigger="click"
-                        placement="bottom-start"
-                        animation="scale-subtle"
-                        appendTo={() => document.body}>
-                        <button
-                          className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white rounded px-4 py-2 rounded-none pr-8 relative"
-                          tabIndex="0">
-                          <span className="inline-flex items-center justify-center whitespace-nowrap">
-                            <div className="truncate max-w-[8rem] text-xs">
-                              {authType}
-                            </div>
-                          </span>
-                          <ChevronDown
-                            size={14}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none"
-                          />
-                        </button>
-                      </Tippy>
-                    </div>
-                  </span>
+                              ) : (
+                                <Circle
+                                  size={15}
+                                  className="mr-3 text-zinc-500"
+                                />
+                              )}
+                              <span className="text-zinc-300">{type.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      }
+                      interactive={true}
+                      trigger="click"
+                      placement="bottom-start">
+                      <button className="flex items-center px-3 py-1 text-xs font-semibold text-zinc-400 hover:text-white bg-zinc-800 rounded border border-zinc-600">
+                        <span className="mr-2">{authType}</span>
+                        <ChevronDown size={15} />
+                      </button>
+                    </Tippy>
+                  </div>
 
                   <div className="flex items-center">
-                    {/* Enabled Checkbox */}
-                    <div className="flex items-center cursor-pointer mr-4">
+                    {/* Enabled Checkbox - Smaller */}
+                    <div className="flex items-center mr-3">
                       <input
                         id="auth-enabled"
                         type="checkbox"
                         defaultChecked
-                        className="w-4 h-4 text-btn bg-transparent border-zinc-600 rounded focus:ring-btn focus:ring-2"
+                        className="w-3 h-3 text-btn bg-transparent border-zinc-600 rounded focus:ring-btn focus:ring-1"
                       />
                       <label
                         htmlFor="auth-enabled"
-                        className="ml-2 text-xs font-semibold text-zinc-300 cursor-pointer">
+                        className="ml-2 text-xs font-semibold text-zinc-300">
                         Enabled
                       </label>
                     </div>
 
-                    {/* Help Link */}
+                    <button className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <Trash size={15} />
+                    </button>
+
                     <a
                       href="https://docs.hoppscotch.io/documentation/features/authorization"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <svg
-                          viewBox="0 0 24 24"
-                          width="1em"
-                          height="1em"
-                          className="svg-icons">
-                          <g
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
-                          </g>
-                        </svg>
-                      </span>
+                      className="p-1 text-zinc-400 hover:text-white transition-colors">
+                      <svg viewBox="0 0 24 24" width="15" height="15">
+                        <g
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
+                        </g>
+                      </svg>
                     </a>
-
-                    {/* Clear Button */}
-                    <button
-                      aria-label="Clear"
-                      role="button"
-                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white p-2"
-                      tabIndex="0">
-                      <span className="inline-flex items-center justify-center whitespace-nowrap">
-                        <Trash size={16} />
-                      </span>
-                    </button>
                   </div>
                 </div>
 
-                {/* Authorization Content */}
-                <div className="flex flex-1 border-b border-zinc-800/80">
-                  {/* Left Content Area */}
-                  <div className="w-2/3 border-r border-zinc-800/80">
-                    <div className="p-4">
-                      {authType === "Inherit" ? (
-                        <span className="text-zinc-400 text-sm">
-                          Please save this request in any collection to inherit
-                          the authorization
-                        </span>
-                      ) : authType === "None" ? (
-                        <span className="text-zinc-400 text-sm">
-                          No authorization will be sent with this request
-                        </span>
-                      ) : authType === "Basic Auth" ? (
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                              Username
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                              placeholder="Enter username"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                              Password
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                              placeholder="Enter password"
-                            />
-                          </div>
-                        </div>
-                      ) : authType === "Bearer" ? (
+                {/* Authorization Content - Improved layout */}
+                <div className="flex flex-1">
+                  <div className="w-2/3 border-r border-zinc-800/80 p-4">
+                    {authType === "Inherit" ? (
+                      <span className="text-zinc-400 text-xs">
+                        Please save this request in any collection to inherit
+                        the authorization
+                      </span>
+                    ) : authType === "None" ? (
+                      <span className="text-zinc-400 text-xs">
+                        No authorization will be sent with this request
+                      </span>
+                    ) : authType === "Basic Auth" ? (
+                      <div className="space-y-3">
                         <div>
-                          <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                            Token
+                          <label className="block text-xs font-semibold text-zinc-500 mb-1">
+                            Username
                           </label>
                           <input
                             type="text"
-                            className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                            placeholder="Enter bearer token"
+                            className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-xs text-zinc-300 focus:outline-none focus:border-btn"
+                            placeholder="Enter username"
                           />
                         </div>
-                      ) : authType === "API Key" ? (
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                              Key
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                              placeholder="Enter API key name"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                              Value
-                            </label>
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                              placeholder="Enter API key value"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                              Add to
-                            </label>
-                            <select className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn">
-                              <option value="header" className="bg-primary">
-                                Header
-                              </option>
-                              <option value="query" className="bg-primary">
-                                Query params
-                              </option>
-                            </select>
-                          </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-zinc-500 mb-1">
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-xs text-zinc-300 focus:outline-none focus:border-btn"
+                            placeholder="Enter password"
+                          />
                         </div>
-                      ) : (
-                        <span className="text-zinc-400 text-sm">
-                          {authType} configuration will be available here
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <span className="text-zinc-400 text-xs">
+                        {authType} configuration will be available here
+                      </span>
+                    )}
                   </div>
 
-                  {/* Right Help Panel */}
-                  <div className="w-1/3 min-w-[12rem] flex-shrink-0 bg-primary p-4">
-                    <div className="pb-2 text-zinc-500 text-xs">
+                  <div className="w-1/3 bg-primary p-4">
+                    <div className="text-zinc-500 text-xs mb-3">
                       The authorization header will be automatically generated
                       when you send the request.
                     </div>
-
                     <a
                       href="https://docs.hoppscotch.io/documentation/features/authorization"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center focus:outline-none hover:text-zinc-300 focus-visible:text-zinc-300 flex-row-reverse text-btn hover:text-btn-hover text-xs font-medium mt-3"
-                      tabIndex="0">
-                      <ExternalLink size={14} className="ml-2" />
+                      className="inline-flex items-center text-btn hover:text-btn-hover text-xs font-medium">
                       Learn how
+                      <ExternalLink size={12} className="ml-1" />
                     </a>
                   </div>
                 </div>
@@ -1028,13 +860,13 @@ function GraphQLPanel() {
           </div>
         </div>
 
-        {/* Vertical Drag Handle - More subtle like original */}
+        {/* Vertical Drag Handle */}
         <div
           onMouseDown={startVerticalResizing}
           className="h-[2px] bg-zinc-700/50 cursor-row-resize hover:bg-btn transition-all duration-200 hover:h-[4px] flex-shrink-0"
         />
 
-        {/* Bottom Section - Keyboard Shortcuts */}
+        {/* Bottom Section */}
         <div
           style={{ height: `${100 - topHeight}%` }}
           className="overflow-hidden">
@@ -1044,14 +876,10 @@ function GraphQLPanel() {
         </div>
       </div>
 
-      {/* Horizontal Drag Handle - Much more subtle and properly positioned */}
+      {/* Horizontal Drag Handle */}
       <div
         onMouseDown={startResizing}
         className="w-[2px] cursor-col-resize bg-zinc-700/50 hover:bg-btn transition-all duration-200 hover:w-[4px] flex-shrink-0 relative z-50"
-        style={{
-          minWidth: "2px",
-          maxWidth: "4px",
-        }}
       />
 
       {/* Right Panel */}

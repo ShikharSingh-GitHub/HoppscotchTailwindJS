@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import IconButton from "../IconButton/IconButton";
 
 // Custom GraphQL Icon Component
-const GraphQLIcon = ({ size = 17 }) => (
+const GraphQLIcon = ({ size = 15 }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
@@ -37,7 +37,7 @@ const Sidebar = () => {
           height={`flex justify-center items-center h-[46px] w-full ${getActiveStyle(
             "/rest"
           )}`}>
-          <Link2 size={17} />
+          <Link2 size={15} />
         </IconButton>
       </Link>
 
@@ -48,7 +48,7 @@ const Sidebar = () => {
           height={`flex justify-center items-center h-[46px] w-full ${getActiveStyle(
             "/graphql"
           )}`}>
-          <GraphQLIcon size={17} />
+          <GraphQLIcon size={15} />
         </IconButton>
       </Link>
 
@@ -59,7 +59,7 @@ const Sidebar = () => {
           height={`flex justify-center items-center h-[46px] w-full ${getActiveStyle(
             "/realtime"
           )}`}>
-          <Globe size={17} />
+          <Globe size={15} />
         </IconButton>
       </Link>
 
@@ -70,7 +70,7 @@ const Sidebar = () => {
           height={`flex justify-center items-center h-[46px] w-full ${getActiveStyle(
             "/settings"
           )}`}>
-          <Settings size={17} />
+          <Settings size={15} />
         </IconButton>
       </Link>
     </div>

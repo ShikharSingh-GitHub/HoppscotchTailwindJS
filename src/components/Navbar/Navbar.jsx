@@ -49,7 +49,7 @@ const Navbar = () => {
               }
               theme="light">
               <button className="lg:block hidden text-gray-400 hover:text-white">
-                <Download size={17} />
+                <Download size={15} />
               </button>
             </Tippy>
 
@@ -59,7 +59,7 @@ const Navbar = () => {
               }
               theme="light">
               <button className="text-gray-400 hover:text-white">
-                <CircleUserRound size={17} />
+                <CircleUserRound size={15} />
               </button>
             </Tippy>
           </div>
