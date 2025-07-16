@@ -263,11 +263,11 @@ const Footer = () => {
       <div className="flex justify-between items-center py-2 px-3 border-t border-zinc-800/80">
         <div className="flex items-center space-x-4">
           <IconButton name="Expand Sidebar" direction="top">
-            <PanelRight size={17} />
+            <PanelRight size={16} />
           </IconButton>
 
           <IconButton name="Interceptor" direction="top">
-            <ShieldCheck size={17} />
+            <ShieldCheck size={16} />
           </IconButton>
         </div>
 
@@ -281,12 +281,11 @@ const Footer = () => {
             interactive={true}
             arrow={true}
             maxWidth={350}
-            trigger="manual"
-            className=" !bg-[#1b1b1b] rounded-xl border border-zinc-800 mb-[6px] w-[240px]">
+            className="!bg-[#1b1b1b] rounded-xl border border-zinc-800 mb-[6px] w-[240px]">
             <button
               onClick={() => setShowFeedbackModal(!showFeedbackModal)}
-              className="flex items-center space-x-2 text-gray-400 hover:text-white text-xs font-semibold me-10">
-              <CircleHelp size={17} />
+              className="flex items-center space-x-2 text-xs font-semibold text-zinc-400 hover:text-white transition me-10">
+              <CircleHelp size={16} />
               <span>Help & feedback</span>
             </button>
           </Tippy>

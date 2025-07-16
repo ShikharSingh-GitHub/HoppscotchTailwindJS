@@ -37,7 +37,7 @@ const RouteHeader = () => {
     },
   ]);
 
-  const [activeTab, setActiveTap] = useState(1);
+  const [activeTab, setActiveTab] = useState(1);
   const containerRef = useRef(null);
   const [seeAllMethods, setSeeAllMethod] = useState(false);
   const [showEnvironmentModal, setShowEnvironmentModal] = useState(false);
@@ -62,196 +62,168 @@ const RouteHeader = () => {
     const newId = history.length + 1;
     setHistory([
       ...history,
-      { id: newId, method: "GET", title: "Untitled", url: "" },
+      {
+        id: newId,
+        method: "GET",
+        title: "Untitled",
+        url: "https://echo.hoppscotch.io",
+      },
     ]);
-    setActiveTap(newId);
+    setActiveTab(newId);
   };
 
   // Remove History
   const removeHistory = (id, index) => {
     setHistory(history.filter((h) => h.id !== id));
-    setActiveTap(index > 1 ? index - 1 : 1);
+    setActiveTab(index > 1 ? index - 1 : 1);
   };
 
   // Update Method
-  const updateMethod = (id, newMethod) => {
-    setHistory((prevHistory) =>
-      prevHistory.map((item) =>
-        item.id === id ? { ...item, method: newMethod } : item
-      )
+  const updateMethod = (id, method) => {
+    setHistory(
+      history.map((h) => (h.id === id ? { ...h, method: method } : h))
     );
   };
 
-  // Update Route URL
+  // Update URL
   const updateURL = (id, url) => {
-    setHistory((prevHistory) =>
-      prevHistory.map((item) => (item.id === id ? { ...item, url: url } : item))
-    );
+    setHistory(history.map((h) => (h.id === id ? { ...h, url: url } : h)));
   };
 
-  // Get Method color
-  const getMethodColor = (name) => {
-    switch (name) {
-      case "GET":
-        return "text-green-500";
-      case "POST":
-        return "text-amber-500";
-      case "PUT":
-        return "text-sky-500";
-      case "DELETE":
-        return "text-rose-500";
-      case "HEAD":
-        return "text-teal-500";
-      case "PATCH":
-        return "text-purple-500";
-      case "OPTIONS":
-        return "text-blue-500";
-      default:
-        return "text-gray-500";
-    }
+  const getMethodColor = (method) => {
+    const colors = {
+      GET: "text-green-500",
+      POST: "text-blue-500",
+      PUT: "text-orange-500",
+      PATCH: "text-purple-500",
+      DELETE: "text-red-500",
+      HEAD: "text-gray-500",
+      OPTIONS: "text-yellow-500",
+      CONNECT: "text-pink-500",
+      TRACE: "text-indigo-500",
+      CUSTOM: "text-cyan-500",
+    };
+    return colors[method] || "text-gray-500";
   };
 
-  // Environment Modal Component
   const EnvironmentModal = () => (
-    <div className="w-80 bg-primary border border-zinc-700 rounded-lg shadow-lg">
-      {/* Search Input */}
-      <div className="p-3 border-b border-zinc-700">
-        <div className="relative border border-zinc-600 rounded">
-          <div className="flex items-center px-3 py-2">
-            <Search size={14} className="text-zinc-500 mr-2" />
+    <div className="w-80 max-h-96 overflow-hidden">
+      <div className="flex flex-col focus:outline-none w-full h-full bg-zinc-800 border border-zinc-700 rounded-md shadow-xl">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-zinc-700">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-white">Environment</h3>
+            <button
+              onClick={() => setShowEnvironmentModal(false)}
+              className="text-zinc-400 hover:text-white">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="mt-3 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={16} className="text-zinc-400" />
+            </div>
             <input
               type="text"
-              placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-xs text-white placeholder-zinc-500 outline-none flex-1"
+              className="w-full pl-10 pr-3 py-2 bg-zinc-900 border border-zinc-600 rounded text-sm text-white placeholder-zinc-400 focus:outline-none focus:border-btn"
+              placeholder="Search environments"
             />
           </div>
         </div>
-      </div>
 
-      {/* No Environment Option */}
-      <div className="p-2">
-        <button
-          onClick={() => {
-            setSelectedEnvironment("No environment");
-            setShowEnvironmentModal(false);
-          }}
-          className="w-full flex items-center justify-between px-4 py-3 rounded hover:bg-search-bg-hover transition-colors">
-          <div className="flex items-center">
-            <span className="text-sm font-semibold text-white">
-              No environment
-            </span>
-          </div>
-          {selectedEnvironment === "No environment" && (
-            <Check size={16} className="text-btn" />
-          )}
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="border-t border-zinc-700">
-        <div className="flex border-b border-zinc-700">
+        {/* Quick Select */}
+        <div className="px-4 py-3 border-b border-zinc-700">
           <button
-            onClick={() => setActiveEnvTab("personal")}
-            className={`flex-1 px-4 py-3 text-xs font-semibold ${
-              activeEnvTab === "personal"
-                ? "text-white border-b-2 border-btn bg-search-bg-hover"
-                : "text-zinc-400 hover:text-white hover:bg-search-bg-hover"
-            }`}>
-            Personal Environments
-          </button>
-          <button
-            onClick={() => setActiveEnvTab("workspace")}
-            className={`flex-1 px-4 py-3 text-xs font-semibold opacity-75 cursor-not-allowed ${
-              activeEnvTab === "workspace"
-                ? "text-white border-b-2 border-btn bg-search-bg-hover"
-                : "text-zinc-400"
-            }`}
-            disabled>
-            Workspace Environments
+            onClick={() => {
+              setSelectedEnvironment("No environment");
+              setShowEnvironmentModal(false);
+            }}
+            className="w-full flex items-center justify-between px-4 py-3 rounded hover:bg-search-bg-hover transition-colors">
+            <div className="flex items-center">
+              <span className="text-sm font-semibold text-white">
+                No environment
+              </span>
+            </div>
+            {selectedEnvironment === "No environment" && (
+              <Check size={16} className="text-btn" />
+            )}
           </button>
         </div>
 
-        {/* Environment Content */}
-        <div className="p-4">
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="w-16 h-16 mb-4 flex items-center justify-center">
-              <svg
-                width="64"
-                height="64"
-                viewBox="0 0 512 512"
-                className="text-zinc-600"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M256 32L64 160L256 288L448 160L256 32Z"
-                  fill="currentColor"
-                  opacity="0.8"
-                />
-                <path
-                  d="M64 160V352L256 480L448 352V160"
-                  stroke="currentColor"
-                  strokeWidth="32"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                  opacity="0.6"
-                />
-                <path
-                  d="M256 288V480"
-                  stroke="currentColor"
-                  strokeWidth="32"
-                  strokeLinecap="round"
-                  opacity="0.6"
-                />
-                <path
-                  d="M160 128L256 80L352 128"
-                  stroke="currentColor"
-                  strokeWidth="24"
-                  strokeLinecap="round"
-                  opacity="0.4"
-                />
-                <path
-                  d="M64 160L256 288L448 160"
-                  stroke="currentColor"
-                  strokeWidth="24"
-                  strokeLinecap="round"
-                  opacity="0.5"
-                />
-                <circle
-                  cx="256"
-                  cy="160"
-                  r="8"
-                  fill="currentColor"
-                  opacity="0.8"
-                />
-                <circle
-                  cx="256"
-                  cy="288"
-                  r="6"
-                  fill="currentColor"
-                  opacity="0.6"
-                />
-                <circle
-                  cx="160"
-                  cy="128"
-                  r="4"
-                  fill="currentColor"
-                  opacity="0.4"
-                />
-                <circle
-                  cx="352"
-                  cy="128"
-                  r="4"
-                  fill="currentColor"
-                  opacity="0.4"
-                />
-              </svg>
+        {/* Tabs */}
+        <div className="border-t border-zinc-700">
+          <div className="flex border-b border-zinc-700">
+            <button
+              onClick={() => setActiveEnvTab("personal")}
+              className={`flex-1 px-4 py-3 text-xs font-semibold ${
+                activeEnvTab === "personal"
+                  ? "text-white border-b-2 border-btn bg-search-bg-hover"
+                  : "text-zinc-400 hover:text-white hover:bg-search-bg-hover"
+              }`}>
+              Personal Environments
+            </button>
+            <button
+              onClick={() => setActiveEnvTab("workspace")}
+              className={`flex-1 px-4 py-3 text-xs font-semibold ${
+                activeEnvTab === "workspace"
+                  ? "text-white border-b-2 border-btn bg-search-bg-hover"
+                  : "text-zinc-400 hover:text-white hover:bg-search-bg-hover"
+              }`}>
+              Workspace Environments
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-4">
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="w-16 h-16 mb-4 bg-zinc-700 rounded-lg flex items-center justify-center">
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 512 512"
+                  className="text-zinc-500">
+                  <path
+                    fill="currentColor"
+                    d="M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208s208-93.13 208-208S370.87 48 256 48m-96 240a16 16 0 0 1-16-16v-64a16 16 0 0 1 16-16h192a16 16 0 0 1 16 16v64a16 16 0 0 1-16 16"
+                  />
+                  <circle
+                    cx="256"
+                    cy="352"
+                    r="32"
+                    fill="currentColor"
+                    opacity="0.8"
+                  />
+                  <circle
+                    cx="256"
+                    cy="288"
+                    r="6"
+                    fill="currentColor"
+                    opacity="0.6"
+                  />
+                  <circle
+                    cx="160"
+                    cy="128"
+                    r="4"
+                    fill="currentColor"
+                    opacity="0.4"
+                  />
+                  <circle
+                    cx="352"
+                    cy="128"
+                    r="4"
+                    fill="currentColor"
+                    opacity="0.4"
+                  />
+                </svg>
+              </div>
+              <span className="text-xs text-zinc-500 text-center max-w-sm">
+                Environments are empty
+              </span>
             </div>
-            <span className="text-xs text-zinc-500 text-center max-w-sm">
-              Environments are empty
-            </span>
           </div>
         </div>
       </div>
@@ -270,7 +242,7 @@ const RouteHeader = () => {
               {history.map((h, index) => (
                 <div
                   key={h.id}
-                  onClick={() => setActiveTap(index + 1)}
+                  onClick={() => setActiveTab(index + 1)}
                   className={`flex items-center justify-between px-5 space-x-4 w-48 h-full  text-center cursor-pointer ${
                     activeTab === index + 1
                       ? "bg-primary border-t-[3px] border-btn text-white"
@@ -322,8 +294,7 @@ const RouteHeader = () => {
               theme="popover"
               interactive={true}
               arrow={true}
-              maxWidth={350}
-              trigger="manual">
+              maxWidth={350}>
               <button
                 onClick={() => setShowEnvironmentModal(!showEnvironmentModal)}
                 className="flex items-center space-x-2 px-3 py-2 rounded hover:bg-search-bg transition-colors">
@@ -360,9 +331,10 @@ const RouteHeader = () => {
                 className="cursor-pointer flex h-8 items-center justify-between">
                 <button
                   className={`lg:text-xs text-[10px] font-semibold ${getMethodColor(
-                    history[activeTab - 1].method
+                    history[activeTab - 1]?.method || "GET" // Fix: Added optional chaining and fallback
                   )}`}>
-                  {history[activeTab - 1].method}
+                  {history[activeTab - 1]?.method || "GET"}{" "}
+                  {/* Fix: Added optional chaining and fallback */}
                 </button>
                 <ChevronDown size={15} />
               </div>
@@ -370,19 +342,23 @@ const RouteHeader = () => {
               {/* All Methods */}
               {seeAllMethods && (
                 <div className="absolute top-10 left-0 bg-search-bg-hover w-full rounded p-2 border border-search-bg z-10">
-                  {methods.map((methods) => (
-                    <button
-                      onClick={() => {
-                        updateMethod(history[activeTab - 1].id, methods);
-                        setSeeAllMethod(false);
-                      }}
-                      key={methods}
-                      className={`flex text-[11px] mb-1 px-4 py-[6px] rounded font-semibold hover:bg-search-bg w-full ${getMethodColor(
-                        methods
-                      )}`}>
-                      {methods}
-                    </button>
-                  ))}
+                  {methods.map(
+                    (
+                      method // Fix: Changed from 'methods' to 'method' to avoid confusion
+                    ) => (
+                      <button
+                        onClick={() => {
+                          updateMethod(history[activeTab - 1]?.id, method); // Fix: Added optional chaining
+                          setSeeAllMethod(false);
+                        }}
+                        key={method}
+                        className={`flex text-[11px] mb-1 px-4 py-[6px] rounded font-semibold hover:bg-search-bg w-full ${getMethodColor(
+                          method
+                        )}`}>
+                        {method}
+                      </button>
+                    )
+                  )}
                 </div>
               )}
             </div>
@@ -392,10 +368,11 @@ const RouteHeader = () => {
               <input
                 type="text"
                 className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
-                placeholder="Enter a uURL or paste a cURL command"
-                value={history[activeTab - 1].url}
-                onChange={(e) =>
-                  updateURL(history[activeTab - 1].id, e.currentTarget.value)
+                placeholder="Enter a URL or paste a cURL command" // Fix: Changed "uURL" to "URL"
+                value={history[activeTab - 1]?.url || ""} // Fix: Added optional chaining and fallback
+                onChange={
+                  (e) =>
+                    updateURL(history[activeTab - 1]?.id, e.currentTarget.value) // Fix: Added optional chaining
                 }
               />
             </div>
@@ -418,6 +395,8 @@ const RouteHeader = () => {
               <button
                 onClick={() => requested()}
                 className="px-4 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-l">
+                {" "}
+                {/* Fix: Added rounded-l */}
                 Send
               </button>
             </Tippy>
@@ -438,7 +417,7 @@ const RouteHeader = () => {
             <Tippy
               content={
                 <span className="text-[10px] font-semibold">
-                  Send{" "}
+                  Save {/* Fix: Changed from "Send" to "Save" */}
                   <span className="bg-zinc-500 text-gray-300 px-1 rounded py[2px]">
                     ctrl
                   </span>{" "}

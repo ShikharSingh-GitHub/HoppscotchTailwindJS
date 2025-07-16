@@ -32,12 +32,18 @@ import useRequestStore from "../store/store";
 
 function GraphQLPanel() {
   const [leftWidth, setLeftWidth] = useState(75);
+  const [topHeight, setTopHeight] = useState(60); // Add vertical drag state
   const containerRef = useRef(null);
+  const verticalContainerRef = useRef(null); // Add ref for vertical container
   const isResizing = useRef(false);
+  const isVerticalResizing = useRef(false); // Add vertical resizing state
 
   const MIN_WIDTH = 25;
   const MAX_WIDTH = 75;
+  const MIN_HEIGHT = 30; // Minimum height for top section
+  const MAX_HEIGHT = 80; // Maximum height for top section
 
+  // Horizontal resizing functions
   const startResizing = (e) => {
     e.preventDefault();
     isResizing.current = true;
@@ -60,6 +66,30 @@ function GraphQLPanel() {
     isResizing.current = false;
     document.removeEventListener("mousemove", handleResize);
     document.removeEventListener("mouseup", stopResizing);
+  };
+
+  // Vertical resizing functions
+  const startVerticalResizing = () => {
+    isVerticalResizing.current = true;
+    document.addEventListener("mousemove", handleVerticalResize);
+    document.addEventListener("mouseup", stopVerticalResizing);
+  };
+
+  const handleVerticalResize = (e) => {
+    if (!isVerticalResizing.current || !verticalContainerRef.current) return;
+    const containerRect = verticalContainerRef.current.getBoundingClientRect();
+    const containerHeight = containerRect.height;
+    let newTopHeight =
+      ((e.clientY - containerRect.top) / containerHeight) * 100;
+    if (newTopHeight < MIN_HEIGHT) newTopHeight = MIN_HEIGHT;
+    if (newTopHeight > MAX_HEIGHT) newTopHeight = MAX_HEIGHT;
+    setTopHeight(newTopHeight);
+  };
+
+  const stopVerticalResizing = () => {
+    isVerticalResizing.current = false;
+    document.removeEventListener("mousemove", handleVerticalResize);
+    document.removeEventListener("mouseup", stopVerticalResizing);
   };
 
   const [history, setHistory] = useState([
@@ -298,105 +328,114 @@ function GraphQLPanel() {
     <div
       className="flex w-full h-full border-l border-gray-700/30"
       ref={containerRef}>
-      <div style={{ width: `${leftWidth}%` }}>
-        <div className="lg:px-4 px-2 py-3">
-          <div className="flex h-9 gap-x-2">
-            <div className="w-[85%] grid bg-search-bg-hover rounded-sm">
-              {/* Input */}
-              <div className="w-full">
-                <input
-                  type="text"
-                  className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
-                  value={"https://echo.hoppscotch.io/graphql"}
-                />
+      {/* Left Panel with Vertical Split */}
+      <div
+        style={{ width: `${leftWidth}%` }}
+        className="flex flex-col"
+        ref={verticalContainerRef}>
+        {/* Top Section - GraphQL Editor */}
+        <div
+          style={{ height: `${topHeight}%` }}
+          className="overflow-hidden flex flex-col">
+          {/* URL Input */}
+          <div className="lg:px-4 px-2 py-3">
+            <div className="flex h-9 gap-x-2">
+              <div className="w-[85%] grid bg-search-bg-hover rounded-sm">
+                <div className="w-full">
+                  <input
+                    type="text"
+                    className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
+                    value={"https://echo.hoppscotch.io/graphql"}
+                  />
+                </div>
+              </div>
+              <div className="w-[15%] flex lg:mt-0 mt-2 lg:h-full h-8 justify-between items-center">
+                <button
+                  onClick={() => requested()}
+                  className="px-4 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-sm">
+                  Connect
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Connect */}
-            <div className="w-[15%] flex lg:mt-0 mt-2 lg:h-full h-8 justify-between items-center">
-              <button
-                onClick={() => requested()}
-                className="px-4 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-sm">
-                Connect
-              </button>
+          {/* Tabs */}
+          <div className="bg-search-bg-hover h-[46px] pe-3">
+            <div className="w-full flex items-center lg:h-[50px] h-[40px] relative overflow-y-hidden">
+              <div
+                className="flex items-center h-[50px] overflow-x-auto mt-3"
+                ref={tabContainerRef}>
+                {history.map((h, index) => (
+                  <div
+                    key={h.id}
+                    onClick={() => setActiveTap(index + 1)}
+                    className={`flex items-center justify-between px-5 space-x-4 w-48 h-full  text-center cursor-pointer ${
+                      activeTab === index + 1
+                        ? "bg-primary border-t-[3px] border-btn text-white"
+                        : "text-zinc-400 hover:bg-search-bg"
+                    } group`}>
+                    <p className="font-semibold text-[12px]">{h.title}</p>
+                    {history.length > 1 ? (
+                      <Tippy
+                        content={
+                          <span className="text-[10px] font-semibold">
+                            Close
+                          </span>
+                        }
+                        placement="top"
+                        theme="light">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeHistory(h.id, index + 1);
+                          }}
+                          className="sticky right-0 lg:invisible group-hover:visible">
+                          <X size={14} />
+                        </button>
+                      </Tippy>
+                    ) : (
+                      <button></button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <Tippy
+                content={<span className="text-[10px] font-semibold">Add</span>}
+                placement="top"
+                theme="light"
+                delay={300}>
+                <button onClick={addHistory} className="ms-4">
+                  <Plus size={17} />
+                </button>
+              </Tippy>
             </div>
           </div>
-        </div>
-        <div className="bg-search-bg-hover h-[46px] pe-3">
-          <div className="w-full flex items-center lg:h-[50px] h-[40px] relative overflow-y-hidden">
-            <div
-              className="flex items-center h-[50px] overflow-x-auto mt-3"
-              ref={tabContainerRef}>
-              {history.map((h, index) => (
-                <div
-                  key={h.id}
-                  onClick={() => setActiveTap(index + 1)}
-                  className={`flex items-center justify-between px-5 space-x-4 w-48 h-full  text-center cursor-pointer ${
-                    activeTab === index + 1
-                      ? "bg-primary border-t-[3px] border-btn text-white"
-                      : "text-zinc-400 hover:bg-search-bg"
-                  } group`}>
-                  <p className="font-semibold text-[12px]">{h.title}</p>
 
-                  {history.length > 1 ? (
-                    <Tippy
-                      content={
-                        <span className="text-[10px] font-semibold">Close</span>
-                      }
-                      placement="top"
-                      theme="light">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeHistory(h.id, index + 1);
-                        }}
-                        className="sticky right-0 lg:invisible group-hover:visible">
-                        <X size={14} />
-                      </button>
-                    </Tippy>
-                  ) : (
-                    <button></button>
-                  )}
-                </div>
+          {/* Sub Tabs */}
+          <div className="flex justify-between overflow-scroll px-4 space-x-4 mt-3 scrollbar-hide pb-[8px]">
+            <div className="flex space-x-7">
+              {tabs.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.name)}
+                  className={`lg:text-[13px] text-[12px] font-semibold hover:text-white ${
+                    tap === t.name
+                      ? "underline underline-offset-10 decoration-btn decoration-2 text-white"
+                      : "text-zinc-500"
+                  }`}>
+                  {t.name}
+                </button>
               ))}
             </div>
-            <Tippy
-              content={<span className="text-[10px] font-semibold">Add</span>}
-              placement="top"
-              theme="light"
-              delay={300}>
-              <button onClick={addHistory} className="ms-4">
-                <Plus size={17} />
-              </button>
-            </Tippy>
           </div>
-        </div>
-        <div className="flex justify-between overflow-scroll px-4 space-x-4 mt-3 scrollbar-hide pb-[8px]">
-          <div className="flex space-x-7">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.name)}
-                className={`lg:text-[13px] text-[12px] font-semibold hover:text-white ${
-                  tap === t.name
-                    ? "underline underline-offset-10 decoration-btn decoration-2 text-white"
-                    : "text-zinc-500"
-                }`}>
-                {t.name}
-              </button>
-            ))}
-          </div>
-        </div>
 
-        {/* Query Tab */}
-        <div className="">
-          {tap === "Query" && (
-            <>
-              <div>
+          {/* Tab Content */}
+          <div className="flex-1 overflow-hidden">
+            {/* Query Tab */}
+            {tap === "Query" && (
+              <>
                 <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                  {/* Label */}
                   <label className="font-semibold text-zinc-500">Query</label>
-
                   {/* Button group - Exact match to original Hoppscotch */}
                   <div className="flex">
                     {/* Request Button (Play icon with accent color) */}
@@ -630,412 +669,433 @@ function GraphQLPanel() {
                     </button>
                   </div>
                 </div>
-              </div>
-              <div className="min-h-[100%] overflow-y-auto border-b border-zinc-800/80">
-                <CodeMirror
-                  value={queryContent}
-                  onChange={(value) => setQueryContent(value)}
-                  theme={myTheme}
-                  extensions={graphqlExtensions}
-                  placeholder="Enter your GraphQL query here..."
-                />
-              </div>
-            </>
-          )}
-
-          {tap === "Variables" && (
-            <>
-              <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                {/* Label */}
-                <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
-                  Variables
-                </label>
-
-                {/* Button group - Fixed to match original Hoppscotch */}
-                <div className="flex">
-                  {/* Prettify Variables Button */}
-                  <button
-                    aria-label="Prettify Variables"
-                    role="button"
-                    onClick={() => {
-                      try {
-                        const parsed = JSON.parse(variablesContent);
-                        const formatted = JSON.stringify(parsed, null, 2);
-                        setVariablesContent(formatted);
-                      } catch (error) {
-                        console.error("Invalid JSON:", error);
-                      }
-                    }}
-                    className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                    tabIndex="0">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap">
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="1em"
-                        height="1em"
-                        className="svg-icons mr-2">
-                        <g
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2">
-                          <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
-                          <path d="m16 16l-2 2l2 2M3 18h7"></path>
-                        </g>
-                      </svg>
-                      <div className="truncate text-[13px]">Prettify</div>
-                    </span>
-                  </button>
-
-                  {/* Copy Variables Button */}
-                  <button
-                    aria-label="Copy Variables"
-                    role="button"
-                    onClick={async () => {
-                      try {
-                        await navigator.clipboard.writeText(variablesContent);
-                        console.log("Variables copied to clipboard");
-                      } catch (error) {
-                        console.error("Failed to copy:", error);
-                      }
-                    }}
-                    className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                    tabIndex="0">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap">
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="1em"
-                        height="1em"
-                        className="svg-icons mr-2">
-                        <g
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2">
-                          <rect
-                            width="14"
-                            height="14"
-                            x="8"
-                            y="8"
-                            rx="2"
-                            ry="2"></rect>
-                          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-                        </g>
-                      </svg>
-                      <div className="truncate text-[13px]">Copy</div>
-                    </span>
-                  </button>
-
-                  {/* Clear Variables Button */}
-                  <button
-                    aria-label="Clear Variables"
-                    role="button"
-                    onClick={() => setVariablesContent("{}")}
-                    className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
-                    tabIndex="0">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap">
-                      <Trash size={16} className="mr-2" />
-                      <div className="truncate text-[13px]">Clear</div>
-                    </span>
-                  </button>
-
-                  {/* Help Link */}
-                  <a
-                    href="https://docs.hoppscotch.io/documentation/features/graphql-api-testing"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    role="button"
-                    className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap text-zinc-400 hover:text-white p-2"
-                    tabIndex="0">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap">
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="1em"
-                        height="1em"
-                        className="svg-icons">
-                        <g
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
-                        </g>
-                      </svg>
-                    </span>
-                  </a>
+                <div className="h-full overflow-y-auto border-b border-zinc-800/80">
+                  <CodeMirror
+                    value={queryContent}
+                    onChange={(value) => setQueryContent(value)}
+                    theme={myTheme}
+                    extensions={graphqlExtensions}
+                    placeholder="Enter your GraphQL query here..."
+                  />
                 </div>
-              </div>
-              <div className="min-h-[100%] overflow-y-auto border-b border-zinc-800/80">
-                <CodeMirror
-                  value={variablesContent}
-                  onChange={(value) => setVariablesContent(value)}
-                  theme={myTheme}
-                  extensions={jsonExtensions}
-                  placeholder="Enter your GraphQL variables as JSON..."
-                />
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          {tap === "Headers" && <QueryParameterComponent />}
-
-          {tap === "Authorization" && (
-            <>
-              <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
-                <span className="flex items-center">
-                  <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4 truncate">
-                    Authorization Type
+            {tap === "Variables" && (
+              <>
+                <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
+                  <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4">
+                    Variables
                   </label>
 
-                  {/* Authorization Type Dropdown */}
-                  <div className="relative ml-2">
-                    <Tippy
-                      content={
-                        <div className="flex flex-col focus:outline-none bg-zinc-800 border border-zinc-700 rounded-md shadow-xl py-1 min-w-[200px]">
-                          {authTypes.map((type) => (
-                            <button
-                              key={type.id}
-                              onClick={() => setAuthType(type.name)}
-                              role="menuitem"
-                              className="inline-flex items-center flex-shrink-0 px-4 py-2 transition hover:bg-zinc-700 focus:outline-none focus-visible:bg-zinc-700 flex-1 text-left rounded-none">
-                              <span className="inline-flex items-center">
-                                {type.name === authType ? (
-                                  <div className="w-5 h-5 mr-4 text-btn">
-                                    <svg
-                                      viewBox="0 0 24 24"
-                                      width="1.2em"
-                                      height="1.2em"
-                                      className="opacity-75">
-                                      <g
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <circle cx="12" cy="12" r="1"></circle>
-                                      </g>
-                                    </svg>
-                                  </div>
-                                ) : (
-                                  <Circle
-                                    size={20}
-                                    className="opacity-75 mr-4 text-zinc-500"
-                                  />
-                                )}
-                              </span>
-                              <div className="inline-flex items-start flex-1 truncate">
-                                <div className="font-semibold truncate max-w-[16rem] text-zinc-300 text-sm hover:text-white">
-                                  {type.name}
-                                </div>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      }
-                      interactive={true}
-                      trigger="click"
-                      placement="bottom-start"
-                      animation="scale-subtle"
-                      appendTo={() => document.body}>
-                      <button
-                        className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white rounded px-4 py-2 rounded-none pr-8 relative"
-                        tabIndex="0">
-                        <span className="inline-flex items-center justify-center whitespace-nowrap">
-                          <div className="truncate max-w-[8rem] text-xs">
-                            {authType}
-                          </div>
-                        </span>
-                        <ChevronDown
-                          size={14}
-                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none"
-                        />
-                      </button>
-                    </Tippy>
-                  </div>
-                </span>
+                  {/* Button group - Fixed to match original Hoppscotch */}
+                  <div className="flex">
+                    {/* Prettify Variables Button */}
+                    <button
+                      aria-label="Prettify Variables"
+                      role="button"
+                      onClick={() => {
+                        try {
+                          const parsed = JSON.parse(variablesContent);
+                          const formatted = JSON.stringify(parsed, null, 2);
+                          setVariablesContent(formatted);
+                        } catch (error) {
+                          console.error("Invalid JSON:", error);
+                        }
+                      }}
+                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="1em"
+                          height="1em"
+                          className="svg-icons mr-2">
+                          <g
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2">
+                            <path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4"></path>
+                            <path d="m16 16l-2 2l2 2M3 18h7"></path>
+                          </g>
+                        </svg>
+                        <div className="truncate text-[13px]">Prettify</div>
+                      </span>
+                    </button>
 
-                <div className="flex items-center">
-                  {/* Enabled Checkbox */}
-                  <div className="flex items-center cursor-pointer mr-4">
-                    <input
-                      id="auth-enabled"
-                      type="checkbox"
-                      defaultChecked
-                      className="w-4 h-4 text-btn bg-transparent border-zinc-600 rounded focus:ring-btn focus:ring-2"
-                    />
-                    <label
-                      htmlFor="auth-enabled"
-                      className="ml-2 text-xs font-semibold text-zinc-300 cursor-pointer">
-                      Enabled
+                    {/* Copy Variables Button */}
+                    <button
+                      aria-label="Copy Variables"
+                      role="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(variablesContent);
+                          console.log("Variables copied to clipboard");
+                        } catch (error) {
+                          console.error("Failed to copy:", error);
+                        }
+                      }}
+                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="1em"
+                          height="1em"
+                          className="svg-icons mr-2">
+                          <g
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2">
+                            <rect
+                              width="14"
+                              height="14"
+                              x="8"
+                              y="8"
+                              rx="2"
+                              ry="2"></rect>
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                          </g>
+                        </svg>
+                        <div className="truncate text-[13px]">Copy</div>
+                      </span>
+                    </button>
+
+                    {/* Clear Variables Button */}
+                    <button
+                      aria-label="Clear Variables"
+                      role="button"
+                      onClick={() => setVariablesContent("{}")}
+                      className="inline-flex items-center justify-center font-semibold text-zinc-400 hover:text-white transition whitespace-nowrap rounded px-4 py-2 rounded-none"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <Trash size={16} className="mr-2" />
+                        <div className="truncate text-[13px]">Clear</div>
+                      </span>
+                    </button>
+
+                    {/* Help Link */}
+                    <a
+                      href="https://docs.hoppscotch.io/documentation/features/graphql-api-testing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      role="button"
+                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap text-zinc-400 hover:text-white p-2"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="1em"
+                          height="1em"
+                          className="svg-icons">
+                          <g
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
+                          </g>
+                        </svg>
+                      </span>
+                    </a>
+                  </div>
+                </div>
+                <div className="h-full overflow-y-auto border-b border-zinc-800/80">
+                  <CodeMirror
+                    value={variablesContent}
+                    onChange={(value) => setVariablesContent(value)}
+                    theme={myTheme}
+                    extensions={jsonExtensions}
+                    placeholder="Enter your GraphQL variables as JSON..."
+                  />
+                </div>
+              </>
+            )}
+
+            {tap === "Headers" && <QueryParameterComponent />}
+
+            {tap === "Authorization" && (
+              <>
+                <div className="sticky z-10 flex items-center justify-between border-y border-zinc-800/80 bg-primary pl-4">
+                  <span className="flex items-center">
+                    <label className="lg:text-xs text-[10px] text-zinc-500 font-semibold px-4 truncate">
+                      Authorization Type
                     </label>
+
+                    {/* Authorization Type Dropdown */}
+                    <div className="relative ml-2">
+                      <Tippy
+                        content={
+                          <div className="flex flex-col focus:outline-none bg-zinc-800 border border-zinc-700 rounded-md shadow-xl py-1 min-w-[200px]">
+                            {authTypes.map((type) => (
+                              <button
+                                key={type.id}
+                                onClick={() => setAuthType(type.name)}
+                                role="menuitem"
+                                className="inline-flex items-center flex-shrink-0 px-4 py-2 transition hover:bg-zinc-700 focus:outline-none focus-visible:bg-zinc-700 flex-1 text-left rounded-none">
+                                <span className="inline-flex items-center">
+                                  {type.name === authType ? (
+                                    <div className="w-5 h-5 mr-4 text-btn">
+                                      <svg
+                                        viewBox="0 0 24 24"
+                                        width="1.2em"
+                                        height="1.2em"
+                                        className="opacity-75">
+                                        <g
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2">
+                                          <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="10"></circle>
+                                          <circle
+                                            cx="12"
+                                            cy="12"
+                                            r="1"></circle>
+                                        </g>
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <Circle
+                                      size={20}
+                                      className="opacity-75 mr-4 text-zinc-500"
+                                    />
+                                  )}
+                                </span>
+                                <div className="inline-flex items-start flex-1 truncate">
+                                  <div className="font-semibold truncate max-w-[16rem] text-zinc-300 text-sm hover:text-white">
+                                    {type.name}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        }
+                        interactive={true}
+                        trigger="click"
+                        placement="bottom-start"
+                        animation="scale-subtle"
+                        appendTo={() => document.body}>
+                        <button
+                          className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white rounded px-4 py-2 rounded-none pr-8 relative"
+                          tabIndex="0">
+                          <span className="inline-flex items-center justify-center whitespace-nowrap">
+                            <div className="truncate max-w-[8rem] text-xs">
+                              {authType}
+                            </div>
+                          </span>
+                          <ChevronDown
+                            size={14}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none"
+                          />
+                        </button>
+                      </Tippy>
+                    </div>
+                  </span>
+
+                  <div className="flex items-center">
+                    {/* Enabled Checkbox */}
+                    <div className="flex items-center cursor-pointer mr-4">
+                      <input
+                        id="auth-enabled"
+                        type="checkbox"
+                        defaultChecked
+                        className="w-4 h-4 text-btn bg-transparent border-zinc-600 rounded focus:ring-btn focus:ring-2"
+                      />
+                      <label
+                        htmlFor="auth-enabled"
+                        className="ml-2 text-xs font-semibold text-zinc-300 cursor-pointer">
+                        Enabled
+                      </label>
+                    </div>
+
+                    {/* Help Link */}
+                    <a
+                      href="https://docs.hoppscotch.io/documentation/features/authorization"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white p-2"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <svg
+                          viewBox="0 0 24 24"
+                          width="1em"
+                          height="1em"
+                          className="svg-icons">
+                          <g
+                            fill="none"
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
+                          </g>
+                        </svg>
+                      </span>
+                    </a>
+
+                    {/* Clear Button */}
+                    <button
+                      aria-label="Clear"
+                      role="button"
+                      className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white p-2"
+                      tabIndex="0">
+                      <span className="inline-flex items-center justify-center whitespace-nowrap">
+                        <Trash size={16} />
+                      </span>
+                    </button>
                   </div>
-
-                  {/* Help Link */}
-                  <a
-                    href="https://docs.hoppscotch.io/documentation/features/authorization"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white p-2"
-                    tabIndex="0">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap">
-                      <svg
-                        viewBox="0 0 24 24"
-                        width="1em"
-                        height="1em"
-                        className="svg-icons">
-                        <g
-                          fill="none"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"></circle>
-                          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3m.08 4h.01"></path>
-                        </g>
-                      </svg>
-                    </span>
-                  </a>
-
-                  {/* Clear Button */}
-                  <button
-                    aria-label="Clear"
-                    role="button"
-                    className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-zinc-400 hover:text-white p-2"
-                    tabIndex="0">
-                    <span className="inline-flex items-center justify-center whitespace-nowrap">
-                      <Trash size={16} />
-                    </span>
-                  </button>
                 </div>
-              </div>
 
-              {/* Authorization Content */}
-              <div className="flex flex-1 border-b border-zinc-800/80">
-                {/* Left Content Area */}
-                <div className="w-2/3 border-r border-zinc-800/80">
-                  <div className="p-4">
-                    {authType === "Inherit" ? (
-                      <span className="text-zinc-400 text-sm">
-                        Please save this request in any collection to inherit
-                        the authorization
-                      </span>
-                    ) : authType === "None" ? (
-                      <span className="text-zinc-400 text-sm">
-                        No authorization will be sent with this request
-                      </span>
-                    ) : authType === "Basic Auth" ? (
-                      <div className="space-y-4">
+                {/* Authorization Content */}
+                <div className="flex flex-1 border-b border-zinc-800/80">
+                  {/* Left Content Area */}
+                  <div className="w-2/3 border-r border-zinc-800/80">
+                    <div className="p-4">
+                      {authType === "Inherit" ? (
+                        <span className="text-zinc-400 text-sm">
+                          Please save this request in any collection to inherit
+                          the authorization
+                        </span>
+                      ) : authType === "None" ? (
+                        <span className="text-zinc-400 text-sm">
+                          No authorization will be sent with this request
+                        </span>
+                      ) : authType === "Basic Auth" ? (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
+                              Username
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
+                              placeholder="Enter username"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
+                              Password
+                            </label>
+                            <input
+                              type="password"
+                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
+                              placeholder="Enter password"
+                            />
+                          </div>
+                        </div>
+                      ) : authType === "Bearer" ? (
                         <div>
                           <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                            Username
+                            Token
                           </label>
                           <input
                             type="text"
                             className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                            placeholder="Enter username"
+                            placeholder="Enter bearer token"
                           />
                         </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                            Password
-                          </label>
-                          <input
-                            type="password"
-                            className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                            placeholder="Enter password"
-                          />
+                      ) : authType === "API Key" ? (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
+                              Key
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
+                              placeholder="Enter API key name"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
+                              Value
+                            </label>
+                            <input
+                              type="text"
+                              className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
+                              placeholder="Enter API key value"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-zinc-500 mb-2">
+                              Add to
+                            </label>
+                            <select className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn">
+                              <option value="header" className="bg-primary">
+                                Header
+                              </option>
+                              <option value="query" className="bg-primary">
+                                Query params
+                              </option>
+                            </select>
+                          </div>
                         </div>
-                      </div>
-                    ) : authType === "Bearer" ? (
-                      <div>
-                        <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                          Token
-                        </label>
-                        <input
-                          type="text"
-                          className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                          placeholder="Enter bearer token"
-                        />
-                      </div>
-                    ) : authType === "API Key" ? (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                            Key
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                            placeholder="Enter API key name"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                            Value
-                          </label>
-                          <input
-                            type="text"
-                            className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn"
-                            placeholder="Enter API key value"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-semibold text-zinc-500 mb-2">
-                            Add to
-                          </label>
-                          <select className="w-full px-3 py-2 bg-transparent border border-zinc-600 rounded text-sm text-zinc-300 focus:outline-none focus:border-btn">
-                            <option value="header" className="bg-primary">
-                              Header
-                            </option>
-                            <option value="query" className="bg-primary">
-                              Query params
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-zinc-400 text-sm">
-                        {authType} configuration will be available here
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Help Panel */}
-                <div className="w-1/3 min-w-[12rem] flex-shrink-0 bg-primary p-4">
-                  <div className="pb-2 text-zinc-500 text-xs">
-                    The authorization header will be automatically generated
-                    when you send the request.
+                      ) : (
+                        <span className="text-zinc-400 text-sm">
+                          {authType} configuration will be available here
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <a
-                    href="https://docs.hoppscotch.io/documentation/features/authorization"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center focus:outline-none hover:text-zinc-300 focus-visible:text-zinc-300 flex-row-reverse text-btn hover:text-btn-hover text-xs font-medium mt-3"
-                    tabIndex="0">
-                    <ExternalLink size={14} className="ml-2" />
-                    Learn how
-                  </a>
+                  {/* Right Help Panel */}
+                  <div className="w-1/3 min-w-[12rem] flex-shrink-0 bg-primary p-4">
+                    <div className="pb-2 text-zinc-500 text-xs">
+                      The authorization header will be automatically generated
+                      when you send the request.
+                    </div>
+
+                    <a
+                      href="https://docs.hoppscotch.io/documentation/features/authorization"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center focus:outline-none hover:text-zinc-300 focus-visible:text-zinc-300 flex-row-reverse text-btn hover:text-btn-hover text-xs font-medium mt-3"
+                      tabIndex="0">
+                      <ExternalLink size={14} className="ml-2" />
+                      Learn how
+                    </a>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors"></div>
-        <KeyboardShortcuts docUrl="https://docs.hoppscotch.io/documentation/features/graphql-api-testing" />
+        {/* Vertical Drag Handle */}
+        <div
+          onMouseDown={startVerticalResizing}
+          className="hover:h-[10px] h-[3px] bg-zinc-800/60 cursor-row-resize hover:bg-btn-hover transition-colors flex-shrink-0"
+        />
+
+        {/* Bottom Section - Keyboard Shortcuts */}
+        <div
+          style={{ height: `${100 - topHeight}%` }}
+          className="overflow-hidden">
+          <div className="h-full p-4">
+            <KeyboardShortcuts docUrl="https://docs.hoppscotch.io/documentation/features/graphql-api-testing" />
+          </div>
+        </div>
       </div>
+
+      {/* Horizontal Drag Handle */}
       <div
         onMouseDown={startResizing}
         style={{ width: 4, cursor: "col-resize", background: "#27272a" }}
         className="hover:bg-btn-hover transition-colors"
       />
+
+      {/* Right Panel */}
       <div style={{ width: `${100 - leftWidth}%` }}>
         <GraphQLRightPanel />
       </div>
