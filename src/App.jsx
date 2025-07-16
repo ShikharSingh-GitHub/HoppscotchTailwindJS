@@ -16,20 +16,27 @@ import SettingsPanel from "./pages/SettingsPanel";
 function App() {
   return (
     <Router>
-      <div className="h-screen w-screen flex flex-col overflow-hidden">
+      <div className="flex flex-col h-screen bg-primary text-white overflow-hidden">
+        {/* Navbar takes full width at the top */}
         <Navbar />
-        <div className="flex flex-1 w-full border border-gray-700/30 overflow-hidden">
+
+        {/* Main content area with sidebar and content */}
+        <div className="flex flex-1 overflow-hidden">
           <Sidebar />
-          <div className="flex-1">
+
+          {/* Main content panel */}
+          <div className="flex-1 overflow-hidden">
             <Routes>
+              <Route path="/" element={<Navigate to="/rest" replace />} />
               <Route path="/rest" element={<RestPanel />} />
               <Route path="/graphql" element={<GraphQLPanel />} />
               <Route path="/realtime" element={<RealTimePanel />} />
               <Route path="/settings" element={<SettingsPanel />} />
-              <Route path="*" element={<Navigate to="/rest" replace />} />
             </Routes>
           </div>
         </div>
+
+        {/* Footer takes full width at the bottom */}
         <Footer />
       </div>
     </Router>
