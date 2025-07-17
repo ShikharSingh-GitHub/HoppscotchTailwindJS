@@ -10,37 +10,28 @@ const useHistoryStore = create((set, get) => ({
   fetchHistory: async (type = null) => {
     set({ loading: true, error: null });
     try {
-      const history = await apiService.getHistory(type);
-      set({ history, loading: false });
+      console.log("Fetching history...");
+      const response = await apiService.getHistory();
+      console.log("History fetched successfully:", response);
+      set({ history: response.data || [], loading: false });
     } catch (error) {
+      console.error("Error fetching history:", error);
       set({ error: error.message, loading: false });
     }
   },
 
   // Add new history entry
-  addHistoryEntry: async (requestData, responseData) => {
+  addHistoryEntry: async (requestData) => {
     try {
-      const historyEntry = {
-        method: requestData.method,
-        url: requestData.url,
-        headers: requestData.headers,
-        body: requestData.body,
-        responseStatus: responseData.status,
-        responseBody: responseData.body,
-        responseHeaders: responseData.headers,
-        responseTime: responseData.time,
-        requestType: requestData.type || "REST",
-      };
+      console.log("Adding history entry:", requestData);
+      const response = await apiService.addToHistory(requestData);
+      console.log("History entry added successfully:", response);
 
-      const newEntry = await apiService.addHistory(historyEntry);
-
-      // Add to local state
-      set((state) => ({
-        history: [newEntry, ...state.history],
-      }));
-
-      return newEntry;
+      // Refresh the history list
+      await get().fetchHistory();
+      return response;
     } catch (error) {
+      console.error("Error adding to history:", error);
       set({ error: error.message });
       throw error;
     }
@@ -52,46 +43,55 @@ const useHistoryStore = create((set, get) => ({
       await apiService.deleteHistory(id);
 
       // Remove from local state
-      set((state) => ({
-        history: state.history.filter((entry) => entry.id !== id),
-      }));
+      const currentHistory = get().history;
+      const updatedHistory = currentHistory.filter((entry) => entry.id !== id);
+      set({ history: updatedHistory });
     } catch (error) {
+      console.error("Error deleting history entry:", error);
       set({ error: error.message });
+      throw error;
     }
   },
 
-  // Toggle star status
+  // Toggle history star
   toggleHistoryStar: async (id) => {
     try {
-      const result = await apiService.toggleStar(id);
+      await apiService.toggleHistoryStar(id);
 
       // Update local state
-      set((state) => ({
-        history: state.history.map((entry) =>
-          entry.id === id ? { ...entry, is_starred: result.is_starred } : entry
-        ),
-      }));
+      const currentHistory = get().history;
+      const updatedHistory = currentHistory.map((entry) =>
+        entry.id === id ? { ...entry, is_starred: !entry.is_starred } : entry
+      );
+      set({ history: updatedHistory });
     } catch (error) {
+      console.error("Error toggling history star:", error);
       set({ error: error.message });
+      throw error;
     }
   },
 
   // Clear all history
   clearAllHistory: async (type = null) => {
     try {
-      await apiService.clearHistory(type);
-
-      // Clear local state
-      if (type) {
-        set((state) => ({
-          history: state.history.filter((entry) => entry.request_type !== type),
-        }));
-      } else {
-        set({ history: [] });
-      }
+      await apiService.clearAllHistory();
+      set({ history: [] });
     } catch (error) {
+      console.error("Error clearing history:", error);
       set({ error: error.message });
+      throw error;
     }
+  },
+
+  // Restore history entry
+  restoreFromHistory: (historyEntry) => {
+    set({
+      url: historyEntry.url,
+      method: historyEntry.method,
+      headers: JSON.parse(historyEntry.headers || "{}"),
+      params: [], // You might want to parse these from the URL
+      body: historyEntry.body || "",
+    });
   },
 }));
 

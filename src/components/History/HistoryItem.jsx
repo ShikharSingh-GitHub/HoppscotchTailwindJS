@@ -1,127 +1,141 @@
 import Tippy from "@tippyjs/react";
-import { ChevronRight, Star, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { format } from "date-fns";
+
+// Get appropriate color for HTTP method
+export const getMethodColor = (method) => {
+  const colors = {
+    GET: "text-green-500",
+    POST: "text-orange-500",
+    PUT: "text-blue-500",
+    PATCH: "text-yellow-500",
+    DELETE: "text-red-500",
+    HEAD: "text-purple-500",
+    OPTIONS: "text-pink-500",
+  };
+  return colors[method] || "text-gray-500";
+};
+
+// Format date for tooltip - using abbreviated month format (3 letters)
+const formatTooltipDate = (timestamp) => {
+  const date = new Date(timestamp);
+  const fullDate = format(date, "MMM d, yyyy"); // Jul 1, 2023
+  const time = format(date, "h:mm:ss a"); // 12:00:00 AM
+
+  return `${fullDate}, ${time}`;
+};
 
 const HistoryItem = ({ entry, onDelete, onToggleStar, onRestore }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const getMethodColor = (method) => {
-    const colors = {
-      GET: "text-green-500",
-      POST: "text-blue-500",
-      PUT: "text-orange-500",
-      DELETE: "text-red-500",
-      PATCH: "text-purple-500",
-    };
-    return colors[method] || "text-gray-500";
-  };
-
-  const getStatusColor = (status) => {
-    if (status >= 200 && status < 300) return "success-response";
-    if (status >= 400) return "error-response";
-    return "text-yellow-500";
-  };
-
-  const formatTimeAgo = (timestamp) => {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffInSeconds = Math.floor((now - time) / 1000);
-
-    if (diffInSeconds < 60) return "just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  };
-
   return (
-    <div className="flex flex-col">
-      <details className="flex flex-col" open={isExpanded}>
-        <summary
-          className="group flex min-w-0 flex-1 cursor-pointer items-center justify-between text-tiny text-zinc-400 transition focus:outline-none"
+    <div className="group flex items-stretch" id={entry.id}>
+      <span
+        className="flex w-16 cursor-pointer items-center justify-center truncate px-2"
+        onClick={() => onRestore(entry)}
+        data-testid="restore_history_entry">
+        <span
+          className={`truncate text-xxs font-semibold ${getMethodColor(
+            entry.method
+          )}`}>
+          {entry.method}
+        </span>
+      </span>
+
+      <Tippy
+        content={formatTooltipDate(entry.timestamp)}
+        placement="top" // Changed to top
+        theme="light" // Changed to light theme
+        className="tooltip-small"
+        arrow={false}>
+        <span
+          className="flex min-w-0 flex-1 cursor-pointer py-1.5 pr-2 transition text-secondaryLight group-hover:text-white"
+          onClick={() => onRestore(entry)}
+          data-testid="restore_history_entry">
+          <span className="truncate text-xs">{entry.url}</span>
+        </span>
+      </Tippy>
+
+      <span>
+        <span data-v-tippy="" aria-expanded="false"></span>
+      </span>
+
+      {/* Delete button with tooltip - only visible on hover */}
+      <Tippy
+        content="Delete"
+        placement="top"
+        theme="light"
+        className="tooltip-small"
+        arrow={false}>
+        <button
+          aria-label="Delete history entry"
+          role="button"
+          exact="true"
+          className="opacity-0 group-hover:opacity-100 inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-red-500 hover:text-red-600 focus-visible:text-red-600 p-1.5"
+          tabIndex="0"
+          data-testid="delete_history_entry"
           onClick={(e) => {
-            e.preventDefault();
-            setIsExpanded(!isExpanded);
+            e.stopPropagation();
+            onDelete(entry.id);
           }}>
-          <span className="inline-flex items-center justify-center truncate px-4 py-2 transition group-hover:text-zinc-300">
-            <ChevronRight
-              size={16}
-              className={`mr-2 flex flex-shrink-0 transition-transform ${
-                isExpanded ? "rotate-90" : ""
-              }`}
-            />
-            <span className="capitalize-first truncate">
-              {formatTimeAgo(entry.timestamp)}
-            </span>
+          <span className="inline-flex items-center justify-center whitespace-nowrap">
+            <svg
+              viewBox="0 0 24 24"
+              width="1em"
+              height="1em"
+              className="svg-icons">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+              />
+            </svg>
+            <div className="truncate max-w-[16rem]"></div>
           </span>
+        </button>
+      </Tippy>
 
-          <Tippy
-            content={<span className="text-xs">Delete</span>}
-            theme="light">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(entry.id);
-              }}
-              className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-red-500 hover:text-red-600 p-2 hidden group-hover:inline-flex">
-              <Trash2 size={16} />
-            </button>
-          </Tippy>
-        </summary>
-
-        {isExpanded && (
-          <div className="group flex items-stretch" id={entry.id}>
-            <span
-              className={`flex w-16 cursor-pointer items-center justify-center truncate px-2 ${getStatusColor(
-                entry.response_status
-              )}`}
-              onClick={() => onRestore(entry)}>
-              <span className="truncate text-tiny font-semibold">
-                {entry.method}
-              </span>
-            </span>
-
-            <span
-              className="flex min-w-0 flex-1 cursor-pointer py-2 pr-2 transition group-hover:text-zinc-300"
-              onClick={() => onRestore(entry)}>
-              <span className="truncate text-xs">{entry.url}</span>
-            </span>
-
-            <div className="flex">
-              <Tippy
-                content={<span className="text-xs">Delete</span>}
-                theme="light">
-                <button
-                  onClick={() => onDelete(entry.id)}
-                  className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-red-500 hover:text-red-600 p-2 hidden group-hover:inline-flex">
-                  <Trash2 size={16} />
-                </button>
-              </Tippy>
-
-              <Tippy
-                content={
-                  <span className="text-xs">
-                    {entry.is_starred ? "Unstar" : "Star"}
-                  </span>
-                }
-                theme="light">
-                <button
-                  onClick={() => onToggleStar(entry.id)}
-                  className={`inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none p-2 hidden group-hover:inline-flex ${
-                    entry.is_starred
-                      ? "text-yellow-500 hover:text-yellow-600"
-                      : "text-gray-500 hover:text-yellow-500"
-                  }`}>
-                  <Star
-                    size={16}
-                    fill={entry.is_starred ? "currentColor" : "none"}
-                  />
-                </button>
-              </Tippy>
-            </div>
-          </div>
-        )}
-      </details>
+      {/* Star button with tooltip - only visible on hover */}
+      <Tippy
+        content={entry.is_starred ? "Unstar" : "Star"}
+        placement="top"
+        theme="light"
+        className="tooltip-small"
+        arrow={false}>
+        <button
+          aria-label="Star history entry"
+          role="button"
+          exact="true"
+          className={`opacity-0 group-hover:opacity-100 inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none ${
+            entry.is_starred
+              ? "text-yellow-400 hover:text-yellow-500"
+              : "text-yellow-500 hover:text-yellow-600"
+          } p-1.5`}
+          tabIndex="0"
+          data-testid="star_button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleStar(entry.id);
+          }}>
+          <span className="inline-flex items-center justify-center whitespace-nowrap">
+            <svg
+              viewBox="0 0 24 24"
+              width="1em"
+              height="1em"
+              className="svg-icons">
+              <path
+                fill={entry.is_starred ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="m12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01z"
+              />
+            </svg>
+            <div className="truncate max-w-[16rem]"></div>
+          </span>
+        </button>
+      </Tippy>
     </div>
   );
 };

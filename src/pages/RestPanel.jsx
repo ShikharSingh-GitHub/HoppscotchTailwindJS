@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import Response from "../components/LeftPanel/Response";
 import RouteHeader from "../components/LeftPanel/RouteHeader";
 import RightPanel from "../components/RightPanel/RightPanel";
+import useHistoryStore from "../store/historyStore";
+import useRequestStore from "../store/store";
 
 function RestPanel() {
   const [leftWidth, setLeftWidth] = useState(70); // Match GraphQL default
@@ -10,6 +12,8 @@ function RestPanel() {
   const verticalContainerRef = useRef(null);
   const isResizing = useRef(false);
   const isVerticalResizing = useRef(false);
+  const { addHistoryEntry } = useHistoryStore();
+  const { responseData, requestData } = useRequestStore();
 
   // Match GraphQL constraints
   const MIN_WIDTH = 40;
@@ -30,14 +34,14 @@ function RestPanel() {
 
   const handleResize = (e) => {
     if (!isResizing.current || !containerRef.current) return;
-    e.preventDefault();
+
     const containerRect = containerRef.current.getBoundingClientRect();
-    const containerWidth = containerRect.width;
-    let newLeftWidth =
-      ((e.clientX - containerRect.left) / containerWidth) * 100;
-    if (newLeftWidth < MIN_WIDTH) newLeftWidth = MIN_WIDTH;
-    if (newLeftWidth > MAX_WIDTH) newLeftWidth = MAX_WIDTH;
-    setLeftWidth(newLeftWidth);
+    const newWidth =
+      ((e.clientX - containerRect.left) / containerRect.width) * 100;
+
+    // Apply constraints
+    const clampedWidth = Math.min(Math.max(newWidth, MIN_WIDTH), MAX_WIDTH);
+    setLeftWidth(clampedWidth);
   };
 
   const stopResizing = () => {
@@ -61,14 +65,14 @@ function RestPanel() {
 
   const handleVerticalResize = (e) => {
     if (!isVerticalResizing.current || !verticalContainerRef.current) return;
-    e.preventDefault();
+
     const containerRect = verticalContainerRef.current.getBoundingClientRect();
-    const containerHeight = containerRect.height;
-    let newTopHeight =
-      ((e.clientY - containerRect.top) / containerHeight) * 100;
-    if (newTopHeight < MIN_HEIGHT) newTopHeight = MIN_HEIGHT;
-    if (newTopHeight > MAX_HEIGHT) newTopHeight = MAX_HEIGHT;
-    setTopHeight(newTopHeight);
+    const newHeight =
+      ((e.clientY - containerRect.top) / containerRect.height) * 100;
+
+    // Apply constraints
+    const clampedHeight = Math.min(Math.max(newHeight, MIN_HEIGHT), MAX_HEIGHT);
+    setTopHeight(clampedHeight);
   };
 
   const stopVerticalResizing = () => {
@@ -77,6 +81,25 @@ function RestPanel() {
     document.removeEventListener("mouseup", stopVerticalResizing);
     document.body.style.cursor = "";
     document.body.style.userSelect = "";
+  };
+
+  // This function should be called after a successful request
+  const handleRequestComplete = async (requestDetails, responseDetails) => {
+    try {
+      await addHistoryEntry({
+        method: requestDetails.method || "GET",
+        url: requestDetails.url || "",
+        headers: requestDetails.headers || {},
+        body: requestDetails.body || null,
+        responseStatus: responseDetails.status || 200,
+        responseBody: responseDetails.data || "",
+        responseHeaders: responseDetails.headers || {},
+        responseTime: responseDetails.responseTime || 0,
+        requestType: "REST",
+      });
+    } catch (error) {
+      console.error("Failed to add to history:", error);
+    }
   };
 
   return (
@@ -90,7 +113,7 @@ function RestPanel() {
         ref={verticalContainerRef}>
         {/* Top Section - RouteHeader */}
         <div style={{ height: `${topHeight}%` }} className="overflow-hidden">
-          <RouteHeader />
+          <RouteHeader onRequestComplete={handleRequestComplete} />
         </div>
 
         {/* Vertical Drag Handle - More subtle like original */}

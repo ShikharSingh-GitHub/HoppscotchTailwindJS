@@ -1,17 +1,39 @@
 import Tippy from "@tippyjs/react";
+import { forwardRef } from "react";
 
-const IconButton = ({ children, direction = "right", name, height }) => {
-  return (
-    <Tippy
-      content={<span className="text-[10px] font-semibold">{name}</span>}
-      placement={direction}
-      theme="light"
-    >
-      <button className={`${height && height} text-gray-400 hover:text-white`}>
-        {children}
-      </button>
-    </Tippy>
-  );
-};
+const IconButton = forwardRef(
+  (
+    {
+      children,
+      direction = "right",
+      name,
+      height,
+      onClick,
+      className = "",
+      as: Component = "button",
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <Tippy
+        content={<span className="text-[10px] font-semibold">{name}</span>}
+        placement={direction}
+        theme="light">
+        <Component
+          ref={ref}
+          onClick={onClick}
+          className={`${
+            height && height
+          } text-gray-400 hover:text-white ${className}`}
+          {...props}>
+          {children}
+        </Component>
+      </Tippy>
+    );
+  }
+);
+
+IconButton.displayName = "IconButton";
 
 export default IconButton;

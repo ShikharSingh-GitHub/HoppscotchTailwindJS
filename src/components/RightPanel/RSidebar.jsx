@@ -8,34 +8,44 @@ const RSidebar = ({ activePanel, setActivePanel }) => {
 
   return (
     <>
-      <IconButton name="Collections" direction="left" height="h-10">
-        <button onClick={() => setActivePanel("collections")}>
-          <Folder size={17} className={getActiveStyle("collections")} />
-        </button>
+      <IconButton
+        name="Collections"
+        direction="left"
+        height="h-10"
+        onClick={() => setActivePanel("collections")}>
+        <Folder size={17} className={getActiveStyle("collections")} />
       </IconButton>
 
-      <IconButton name="Environments" direction="left" height="h-10">
-        <button onClick={() => setActivePanel("environments")}>
-          <Layers size={17} className={getActiveStyle("environments")} />
-        </button>
+      <IconButton
+        name="Environments"
+        direction="left"
+        height="h-10"
+        onClick={() => setActivePanel("environments")}>
+        <Layers size={17} className={getActiveStyle("environments")} />
       </IconButton>
 
-      <IconButton name="History" direction="left" height="h-10">
-        <button onClick={() => setActivePanel("history")}>
-          <Clock3 size={17} className={getActiveStyle("history")} />
-        </button>
+      <IconButton
+        name="History"
+        direction="left"
+        height="h-10"
+        onClick={() => setActivePanel("history")}>
+        <Clock3 size={17} className={getActiveStyle("history")} />
       </IconButton>
 
-      <IconButton name="Shared Requests" direction="left" height="h-10">
-        <button onClick={() => setActivePanel("shared")}>
-          <Share2 size={17} className={getActiveStyle("shared")} />
-        </button>
+      <IconButton
+        name="Shared Requests"
+        direction="left"
+        height="h-10"
+        onClick={() => setActivePanel("shared")}>
+        <Share2 size={17} className={getActiveStyle("shared")} />
       </IconButton>
 
-      <IconButton name="Generated Code" direction="left" height="h-10">
-        <button onClick={() => setActivePanel("code")}>
-          <Code size={17} className={getActiveStyle("code")} />
-        </button>
+      <IconButton
+        name="Generated Code"
+        direction="left"
+        height="h-10"
+        onClick={() => setActivePanel("code")}>
+        <Code size={17} className={getActiveStyle("code")} />
       </IconButton>
     </>
   );

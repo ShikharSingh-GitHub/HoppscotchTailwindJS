@@ -91,7 +91,7 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col h-full w-12 bg-search-bg-hover border-r border-gray-700/30 transition-all duration-300">
       {navigationItems.map((item) => (
-        <Link key={item.path} to={item.path}>
+        <Link key={item.path} to={item.path} className="block">
           <IconButton
             name={item.tooltip}
             direction="right"

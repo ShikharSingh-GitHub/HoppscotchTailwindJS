@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import useHistoryStore from "../../store/historyStore";
 import useRequestStore from "../../store/store";
 import IconButton from "../IconButton/IconButton";
 import RequestSection from "./RequestSection";
@@ -27,7 +28,7 @@ const methods = [
   "CUSTOM",
 ];
 
-const RouteHeader = () => {
+const RouteHeader = ({ onRequestComplete }) => {
   const [history, setHistory] = useState([
     {
       id: 1,
@@ -40,68 +41,173 @@ const RouteHeader = () => {
   const [activeTab, setActiveTab] = useState(1);
   const containerRef = useRef(null);
   const [seeAllMethods, setSeeAllMethod] = useState(false);
-  const [showEnvironmentModal, setShowEnvironmentModal] = useState(false);
   const [selectedEnvironment, setSelectedEnvironment] =
-    useState("Select Environment");
+    useState("No environment");
+  const [showEnvironmentModal, setShowEnvironmentModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeEnvTab, setActiveEnvTab] = useState("personal");
 
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTo({
-        left: containerRef.current.scrollWidth,
-        behavior: "smooth",
-      });
-    }
-  }, [history]);
-
+  // Get store functions
+  const { addHistoryEntry } = useHistoryStore();
   const { requested } = useRequestStore();
 
-  // Add History
+  // Ref to track request in progress state
+  const isRequestInProgress = useRef(false);
+  const requestTimeoutRef = useRef(null);
+
+  // Fixed request handler
+  const handleSendRequest = async (e) => {
+    // Prevent any form submission if this is inside a form
+    if (e) e.preventDefault();
+
+    // Check if a request is already in progress
+    if (isRequestInProgress.current) {
+      console.log("Request already in progress - preventing duplicate");
+      return;
+    }
+
+    // Set the flag to true to prevent additional requests
+    isRequestInProgress.current = true;
+
+    // Clear any existing timeout
+    if (requestTimeoutRef.current) {
+      clearTimeout(requestTimeoutRef.current);
+    }
+
+    try {
+      // Clear any previous timeout to prevent race conditions
+      if (requestTimeoutRef.current) {
+        clearTimeout(requestTimeoutRef.current);
+      }
+
+      // Build request data from current tab
+      const requestData = {
+        method: history[activeTab - 1]?.method || "GET",
+        url: history[activeTab - 1]?.url || "",
+        headers: {}, // You might want to get this from your headers form
+        body: null, // You might want to get this from your body form if POST/PUT/PATCH
+      };
+
+      console.log("Sending request:", requestData);
+
+      // Make the actual request using your existing store function
+      const startTime = Date.now();
+      const response = await requested(); // Your existing request function
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+
+      console.log("Request completed:", response);
+
+      // Add to history
+      await addHistoryEntry({
+        method: requestData.method,
+        url: requestData.url,
+        headers: requestData.headers,
+        body: requestData.body,
+        responseStatus: response?.status || 200,
+        responseBody:
+          typeof response?.data === "string"
+            ? response.data
+            : JSON.stringify(response?.data || ""),
+        responseHeaders: JSON.stringify(response?.headers || {}),
+        responseTime: responseTime,
+        requestType: "REST",
+      });
+
+      console.log("Added to history successfully");
+
+      // Call the callback if provided
+      if (onRequestComplete) {
+        onRequestComplete(requestData, {
+          status: response?.status || 200,
+          data: response?.data || "",
+          headers: response?.headers || {},
+          responseTime: responseTime,
+        });
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+
+      // Get current tab data for failed request
+      const currentTab = history[activeTab - 1];
+      if (currentTab) {
+        const requestData = {
+          method: currentTab.method || "GET",
+          url: currentTab.url || "",
+          headers: {},
+          body: null,
+        };
+
+        // Still add failed requests to history
+        try {
+          await addHistoryEntry({
+            method: requestData.method,
+            url: requestData.url,
+            headers: requestData.headers,
+            body: requestData.body,
+            responseStatus: 0,
+            responseBody: JSON.stringify({ error: error.message }),
+            responseHeaders: JSON.stringify({}),
+            responseTime: 0,
+            requestType: "REST",
+          });
+        } catch (historyError) {
+          console.error("Failed to add error to history:", historyError);
+        }
+      }
+    } finally {
+      // Reset the flag when request is done
+      requestTimeoutRef.current = setTimeout(() => {
+        isRequestInProgress.current = false;
+      }, 500); // Short delay to prevent rapid clicking
+    }
+  };
+
+  // Helper functions
   const addHistory = () => {
-    const newId = history.length + 1;
-    setHistory([
-      ...history,
-      {
-        id: newId,
-        method: "GET",
-        title: "Untitled",
-        url: "https://echo.hoppscotch.io",
-      },
-    ]);
-    setActiveTab(newId);
+    const newTab = {
+      id: history.length + 1,
+      method: "GET",
+      title: "Untitled",
+      url: "https://echo.hoppscotch.io",
+    };
+    setHistory([...history, newTab]);
+    setActiveTab(newTab.id);
   };
 
-  // Remove History
-  const removeHistory = (id, index) => {
-    setHistory(history.filter((h) => h.id !== id));
-    setActiveTab(index > 1 ? index - 1 : 1);
+  const removeHistory = (id, tabIndex) => {
+    if (history.length === 1) return;
+
+    const updatedHistory = history.filter((h) => h.id !== id);
+    setHistory(updatedHistory);
+
+    if (activeTab === tabIndex) {
+      setActiveTab(Math.max(1, tabIndex - 1));
+    } else if (activeTab > tabIndex) {
+      setActiveTab(activeTab - 1);
+    }
   };
 
-  // Update Method
   const updateMethod = (id, method) => {
-    setHistory(
-      history.map((h) => (h.id === id ? { ...h, method: method } : h))
-    );
+    setHistory(history.map((h) => (h.id === id ? { ...h, method } : h)));
+    setSeeAllMethod(false);
   };
 
-  // Update URL
   const updateURL = (id, url) => {
-    setHistory(history.map((h) => (h.id === id ? { ...h, url: url } : h)));
+    setHistory(history.map((h) => (h.id === id ? { ...h, url } : h)));
   };
 
   const getMethodColor = (method) => {
     const colors = {
       GET: "text-green-500",
-      POST: "text-blue-500",
-      PUT: "text-orange-500",
-      PATCH: "text-purple-500",
+      POST: "text-orange-500",
+      PUT: "text-blue-500",
+      PATCH: "text-yellow-500",
       DELETE: "text-red-500",
-      HEAD: "text-gray-500",
-      OPTIONS: "text-yellow-500",
-      CONNECT: "text-pink-500",
+      HEAD: "text-purple-500",
+      OPTIONS: "text-pink-500",
+      CONNECT: "text-cyan-500",
       TRACE: "text-indigo-500",
-      CUSTOM: "text-cyan-500",
+      CUSTOM: "text-gray-500",
     };
     return colors[method] || "text-gray-500";
   };
@@ -156,83 +262,38 @@ const RouteHeader = () => {
 
         {/* Tabs */}
         <div className="border-t border-zinc-700">
-          <div className="flex border-b border-zinc-700">
-            <button
-              onClick={() => setActiveEnvTab("personal")}
-              className={`flex-1 px-4 py-3 text-xs font-semibold ${
-                activeEnvTab === "personal"
-                  ? "text-white border-b-2 border-btn bg-search-bg-hover"
-                  : "text-zinc-400 hover:text-white hover:bg-search-bg-hover"
-              }`}>
-              Personal Environments
+          <div className="flex">
+            <button className="flex-1 px-4 py-3 text-sm font-semibold text-white border-b-2 border-btn bg-zinc-900">
+              My environments
             </button>
-            <button
-              onClick={() => setActiveEnvTab("workspace")}
-              className={`flex-1 px-4 py-3 text-xs font-semibold ${
-                activeEnvTab === "workspace"
-                  ? "text-white border-b-2 border-btn bg-search-bg-hover"
-                  : "text-zinc-400 hover:text-white hover:bg-search-bg-hover"
-              }`}>
-              Workspace Environments
+            <button className="flex-1 px-4 py-3 text-sm font-semibold text-zinc-400 hover:text-white">
+              Team environments
             </button>
           </div>
+        </div>
 
-          {/* Content */}
-          <div className="p-4">
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="w-16 h-16 mb-4 bg-zinc-700 rounded-lg flex items-center justify-center">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 512 512"
-                  className="text-zinc-500">
-                  <path
-                    fill="currentColor"
-                    d="M256 48C141.13 48 48 141.13 48 256s93.13 208 208 208s208-93.13 208-208S370.87 48 256 48m-96 240a16 16 0 0 1-16-16v-64a16 16 0 0 1 16-16h192a16 16 0 0 1 16 16v64a16 16 0 0 1-16 16"
-                  />
-                  <circle
-                    cx="256"
-                    cy="352"
-                    r="32"
-                    fill="currentColor"
-                    opacity="0.8"
-                  />
-                  <circle
-                    cx="256"
-                    cy="288"
-                    r="6"
-                    fill="currentColor"
-                    opacity="0.6"
-                  />
-                  <circle
-                    cx="160"
-                    cy="128"
-                    r="4"
-                    fill="currentColor"
-                    opacity="0.4"
-                  />
-                  <circle
-                    cx="352"
-                    cy="128"
-                    r="4"
-                    fill="currentColor"
-                    opacity="0.4"
-                  />
-                </svg>
-              </div>
-              <span className="text-xs text-zinc-500 text-center max-w-sm">
-                Environments are empty
-              </span>
-            </div>
+        {/* Content */}
+        <div className="flex-1 p-4">
+          <div className="text-center text-zinc-400 text-sm">
+            No environments found
           </div>
         </div>
       </div>
     </div>
   );
 
+  // Cleanup effect to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (requestTimeoutRef.current) {
+        clearTimeout(requestTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <>
-      {/* HEADERS and TABS SECTION */}
+      {/* TABS SECTION */}
       <div className="bg-search-bg-hover h-[46px] pe-3">
         <div className="grid grid-cols-12">
           <div className="flex items-center h-[46px] relative lg:col-span-7 col-span-8">
@@ -374,7 +435,7 @@ const RouteHeader = () => {
             </div>
           </div>
 
-          {/* Send */}
+          {/* Send Button - FIXED TO USE handleSendRequest */}
           <div className="lg:col-span-1 col-span-2 flex lg:mt-0 mt-2 lg:h-9 h-8 justify-between items-center">
             <Tippy
               content={
@@ -389,7 +450,7 @@ const RouteHeader = () => {
               theme="light"
               delay={300}>
               <button
-                onClick={() => requested()}
+                onClick={handleSendRequest}
                 className="px-3 font-semibold text-center text-xs bg-btn hover:bg-btn-hover w-full h-full rounded-l">
                 Send
               </button>
@@ -445,7 +506,7 @@ const RouteHeader = () => {
         </div>
       </div>
 
-      {/* REQUEST SECTION */}
+      {/* Request Section */}
       <div className="py-3">
         <RequestSection />
       </div>

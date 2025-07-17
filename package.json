@@ -25,6 +25,7 @@
     "@uiw/react-codemirror": "^4.24.0",
     "autoprefixer": "^10.4.21",
     "cm6-graphql": "^0.2.1",
+    "date-fns": "^2.30.0",
     "install": "^0.13.0",
     "lucide-react": "^0.475.0",
     "react": "^18.3.1",

@@ -18,12 +18,14 @@ import {
   WrapText,
 } from "lucide-react";
 import { useState } from "react";
+import History from "../History/History";
 import IconButton from "../IconButton/IconButton";
 import RSidebar from "./RSidebar";
 
 const RightPanel = () => {
   const [activePanel, setActivePanel] = useState("collections");
   const [showEnvironmentMenu, setShowEnvironmentMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState("history");
 
   // Collections Panel Component
   const CollectionsPanel = () => (
@@ -565,7 +567,7 @@ const RightPanel = () => {
       case "environments":
         return <EnvironmentsPanel />;
       case "history":
-        return <HistoryPanel />;
+        return <History />; // Use the imported History component instead of HistoryPanel
       case "shared":
         return <SharedRequestsPanel />;
       case "code":

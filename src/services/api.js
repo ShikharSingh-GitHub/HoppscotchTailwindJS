@@ -1,69 +1,113 @@
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "http://localhost:5001/api";
 
 class ApiService {
-  async request(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const config = {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      ...options,
-    };
+  constructor() {
+    // make sure this matches your backend port + base path
+    this.baseURL = "http://localhost:5001/api";
+  }
 
+  // Test connection method
+  async testConnection() {
     try {
-      const response = await fetch(url, config);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Request failed");
-      }
-
-      return data;
+      const response = await fetch("http://localhost:5001/health");
+      return await response.json();
     } catch (error) {
-      console.error("API Request failed:", error);
+      console.error("Backend connection test failed:", error);
       throw error;
     }
   }
 
-  // History API methods
-  async getHistory(type = null, limit = 50, offset = 0) {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-      offset: offset.toString(),
-    });
-
-    if (type) {
-      params.append("type", type);
+  // History methods
+  async getHistory() {
+    try {
+      const response = await fetch(`${this.baseURL}/history`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Get history failed:", error);
+      throw error;
     }
-
-    return this.request(`/history?${params}`);
   }
 
-  async addHistory(historyData) {
-    return this.request("/history", {
-      method: "POST",
-      body: JSON.stringify(historyData),
-    });
+  async addToHistory(requestData) {
+    console.log("Sending to history:", requestData);
+    try {
+      const response = await fetch(`${this.baseURL}/history`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+
+      if (!response.ok) {
+        console.error(
+          `Server returned ${response.status}: ${await response.text()}`
+        );
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Add to history failed:", error);
+      throw error;
+    }
   }
 
   async deleteHistory(id) {
-    return this.request(`/history/${id}`, {
-      method: "DELETE",
-    });
+    try {
+      const response = await fetch(`${this.baseURL}/history/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Delete history failed:", error);
+      throw error;
+    }
   }
 
-  async toggleStar(id) {
-    return this.request(`/history/${id}/star`, {
-      method: "PATCH",
-    });
+  async toggleHistoryStar(id) {
+    try {
+      const response = await fetch(`${this.baseURL}/history/${id}/star`, {
+        method: "PATCH",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Toggle history star failed:", error);
+      throw error;
+    }
   }
 
-  async clearHistory(type = null) {
-    const params = type ? `?type=${type}` : "";
-    return this.request(`/history${params}`, {
-      method: "DELETE",
-    });
+  async clearAllHistory() {
+    try {
+      const response = await fetch(`${this.baseURL}/history/clear`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Clear all history failed:", error);
+      throw error;
+    }
   }
 }
 
-export default new ApiService();
+// Create and export a single instance
+const apiService = new ApiService();
+export default apiService;
