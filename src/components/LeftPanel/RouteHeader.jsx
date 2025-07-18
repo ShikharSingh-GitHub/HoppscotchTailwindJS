@@ -50,39 +50,19 @@ const RouteHeader = ({ onRequestComplete }) => {
   const { addHistoryEntry } = useHistoryStore();
   const { requested } = useRequestStore();
 
-  // Ref to track request in progress state
-  const isRequestInProgress = useRef(false);
-  const requestTimeoutRef = useRef(null);
-
   // Fixed request handler
-  const handleSendRequest = async (e) => {
-    // Prevent any form submission if this is inside a form
-    if (e) e.preventDefault();
-
-    // Check if a request is already in progress
-    if (isRequestInProgress.current) {
-      console.log("Request already in progress - preventing duplicate");
-      return;
-    }
-
-    // Set the flag to true to prevent additional requests
-    isRequestInProgress.current = true;
-
-    // Clear any existing timeout
-    if (requestTimeoutRef.current) {
-      clearTimeout(requestTimeoutRef.current);
-    }
-
+  const handleSendRequest = async () => {
     try {
-      // Clear any previous timeout to prevent race conditions
-      if (requestTimeoutRef.current) {
-        clearTimeout(requestTimeoutRef.current);
+      const currentTab = history[activeTab - 1];
+      if (!currentTab) {
+        console.error("No active tab found");
+        return;
       }
 
       // Build request data from current tab
       const requestData = {
-        method: history[activeTab - 1]?.method || "GET",
-        url: history[activeTab - 1]?.url || "",
+        method: currentTab.method || "GET",
+        url: currentTab.url || "",
         headers: {}, // You might want to get this from your headers form
         body: null, // You might want to get this from your body form if POST/PUT/PATCH
       };
@@ -154,11 +134,6 @@ const RouteHeader = ({ onRequestComplete }) => {
           console.error("Failed to add error to history:", historyError);
         }
       }
-    } finally {
-      // Reset the flag when request is done
-      requestTimeoutRef.current = setTimeout(() => {
-        isRequestInProgress.current = false;
-      }, 500); // Short delay to prevent rapid clicking
     }
   };
 
@@ -281,15 +256,6 @@ const RouteHeader = ({ onRequestComplete }) => {
       </div>
     </div>
   );
-
-  // Cleanup effect to prevent memory leaks
-  useEffect(() => {
-    return () => {
-      if (requestTimeoutRef.current) {
-        clearTimeout(requestTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <>

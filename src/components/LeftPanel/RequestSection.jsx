@@ -1,4 +1,8 @@
 import { useRef, useState } from "react";
+import Authorization from "./Authorization";
+import Body from "./Body";
+import PostRequestScript from "./PostRequestScript"; // Import PostRequestScript
+import PreRequestScript from "./PreRequestScript";
 import QueryParameter from "./QueryParameter";
 import Response from "./Response";
 
@@ -7,8 +11,8 @@ const tabs = [
   { id: 2, name: "Body" },
   { id: 3, name: "Headers" },
   { id: 4, name: "Authorization" },
-  // { id: 5, name: "Pre-request Script" },
-  { id: 6, name: "Tests" },
+  { id: 5, name: "Pre-request Script" },
+  { id: 6, name: "Post-request Script" },
 ];
 
 const RequestSection = () => {
@@ -49,6 +53,24 @@ const RequestSection = () => {
 
   const bottomHeight = 100 - topHeight;
 
+  const renderActiveTab = () => {
+    switch (tap) {
+      case "Parameters":
+        return <QueryParameter />;
+      case "Body":
+        return <Body />;
+      case "Authorization":
+        return <Authorization />;
+      case "Pre-request Script":
+        return <PreRequestScript />;
+      case "Post-request Script": // Add the PostRequestScript case
+        return <PostRequestScript />;
+      // Add other cases for remaining tabs as they're implemented
+      default:
+        return <QueryParameter />;
+    }
+  };
+
   return (
     <div>
       {/* Tabs */}
@@ -78,12 +100,12 @@ const RequestSection = () => {
         </button>
       </div>
 
-      {/* Query Parameter */}
-      <div ref={containerRef} className="h- w-full h-[70dvh]">
+      {/* Content Area */}
+      <div ref={containerRef} className="w-full h-[70dvh]">
         <div
           style={{ height: `${topHeight - 0.5}%` }}
-          className="overflow-y-auto  pb-20 ">
-          <QueryParameter />
+          className="overflow-y-auto pb-20">
+          {renderActiveTab()}
         </div>
 
         <div
