@@ -2,7 +2,15 @@ import { create } from "zustand";
 
 const useRequestStore = create((set) => ({
   isRequested: false,
+  activeRequest: {
+    method: "GET",
+    url: "",
+    headers: {},
+    body: null,
+  },
   requested: () => set((state) => ({ isRequested: !state.isRequested })),
+  setActiveRequest: (request) => set({ activeRequest: request }),
+
   restoreFromHistory: (historyEntry) => {
     try {
       // Parse headers if they're stored as a string
@@ -11,31 +19,25 @@ const useRequestStore = create((set) => ({
           ? JSON.parse(historyEntry.headers || "{}")
           : historyEntry.headers || {};
 
-      // Convert headers to the format expected by your UI
-      const formattedHeaders = Object.entries(parsedHeaders).map(
-        ([key, value]) => ({
-          key,
-          value,
-          active: true,
-        })
-      );
-
-      // Update the store
-      set({
-        url: historyEntry.url || "",
+      // Create the request object to restore
+      const restoredRequest = {
         method: historyEntry.method || "GET",
-        headers: formattedHeaders,
-        params: [], // You could parse these from the URL if needed
-        body: historyEntry.body || "",
-        // Add other properties as needed
-      });
+        url: historyEntry.url || "",
+        headers: parsedHeaders,
+        body: historyEntry.body || null,
+      };
+
+      // Update the active request
+      set({ activeRequest: restoredRequest });
 
       console.log(
         "Successfully restored request from history:",
-        historyEntry.id
+        historyEntry.url
       );
+      return restoredRequest; // Return the restored request
     } catch (error) {
       console.error("Failed to restore from history:", error);
+      return null;
     }
   },
 }));

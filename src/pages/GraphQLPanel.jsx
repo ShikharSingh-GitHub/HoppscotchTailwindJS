@@ -272,6 +272,10 @@ function GraphQLPanel() {
     { id: 7, name: "AWS Signature", isSelected: false },
   ];
 
+  const [graphqlUrl, setGraphqlUrl] = useState(
+    "https://echo.hoppscotch.io/graphql"
+  );
+
   return (
     <div
       className="flex w-full h-full border-l border-gray-700/30"
@@ -292,9 +296,10 @@ function GraphQLPanel() {
                 <div className="w-full">
                   <input
                     type="text"
-                    className="h-8 w-full text-xs font-medium px-3 focus:outline-none rounded placeholder:text-[10px] placeholder:text-zinc-500 bg-transparent"
-                    value={"https://echo.hoppscotch.io/graphql"}
+                    className="w-[85%] h-8 text-xs font-medium ps-4 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
                     placeholder="Enter GraphQL endpoint URL"
+                    value={graphqlUrl}
+                    onChange={(e) => setGraphqlUrl(e.target.value)}
                   />
                 </div>
               </div>

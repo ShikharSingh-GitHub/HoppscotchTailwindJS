@@ -1,13 +1,11 @@
 import Tippy from "@tippyjs/react";
 import { formatDistanceToNow, isToday, isYesterday, subDays } from "date-fns";
-import { useEffect } from "react";
-import "tippy.js/dist/tippy.css"; // Make sure this is imported somewhere in your app
+import { useEffect, useMemo, useState } from "react";
+import "tippy.js/dist/tippy.css";
 import useHistoryStore from "../../store/historyStore";
-import useRequestStore from "../../store/store";
-import HistoryGroup from "./HistoryGroup";
 
 // Group history entries by time period
-export const groupHistoryByDate = (historyItems) => {
+const groupHistoryByDate = (historyItems) => {
   const groups = {};
 
   historyItems.forEach((item) => {
@@ -52,25 +50,65 @@ const History = () => {
     deleteHistoryEntry,
     toggleHistoryStar,
     clearAllHistory,
+    restoreFromHistory,
   } = useHistoryStore();
 
-  const { restoreFromHistory } = useRequestStore();
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   useEffect(() => {
     fetchHistory();
   }, [fetchHistory]);
 
-  // Group history entries by date
-  const groupedHistory = groupHistoryByDate(history || []);
+  // Memoize the grouped history to prevent unnecessary re-renders
+  const groupedHistory = useMemo(() => {
+    return groupHistoryByDate(history || []);
+  }, [history]);
 
-  // Handler for restoring a request
+  // Initialize all groups as expanded - use history length as dependency
+  useEffect(() => {
+    if (history && history.length > 0) {
+      const initialExpanded = {};
+      groupedHistory.forEach((group) => {
+        initialExpanded[group.date] = true;
+      });
+      setExpandedGroups(initialExpanded);
+    }
+  }, [history?.length, groupedHistory]);
+
   const handleRestoreRequest = (entry) => {
+    console.log("Restoring request from history:", entry);
+    console.log("Tab info - ID:", entry.tabId, "Title:", entry.tabTitle);
     restoreFromHistory(entry);
   };
 
-  // Handler for deleting a group of history entries
+  const handleDeleteEntry = async (id) => {
+    try {
+      await deleteHistoryEntry(id);
+    } catch (error) {
+      console.error("Failed to delete entry:", error);
+    }
+  };
+
+  const handleToggleStar = async (id) => {
+    try {
+      await toggleHistoryStar(id);
+    } catch (error) {
+      console.error("Failed to toggle star:", error);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (window.confirm("Are you sure you want to clear all history?")) {
+      try {
+        await clearAllHistory();
+      } catch (error) {
+        console.error("Failed to clear history:", error);
+      }
+    }
+  };
+
   const handleDeleteGroup = (date) => {
-    if (confirm(`Delete all entries from "${date}"?`)) {
+    if (window.confirm(`Delete all entries from "${date}"?`)) {
       const group = groupedHistory.find((group) => group.date === date);
       if (group && group.items) {
         group.items.forEach((entry) => {
@@ -78,6 +116,31 @@ const History = () => {
         });
       }
     }
+  };
+
+  const toggleGroupExpansion = (date) => {
+    setExpandedGroups((prev) => ({
+      ...prev,
+      [date]: !prev[date],
+    }));
+  };
+
+  const getMethodColor = (method) => {
+    const colors = {
+      GET: "text-green-500",
+      POST: "text-orange-500",
+      PUT: "text-blue-500",
+      PATCH: "text-yellow-500",
+      DELETE: "text-red-500",
+      HEAD: "text-purple-500",
+      OPTIONS: "text-pink-500",
+    };
+    return colors[method] || "text-gray-500";
+  };
+
+  const getMethodResponseClass = (method) => {
+    // All methods get success-response class in original design
+    return "success-response";
   };
 
   if (loading) {
@@ -92,13 +155,35 @@ const History = () => {
 
   return (
     <div className="flex flex-1 flex-col">
+      {/* Breadcrumb */}
+      <div className="flex justify-between border-b border-dividerLight px-4 py-2 text-tiny text-secondaryLight">
+        <div className="flex items-center overflow-x-auto whitespace-nowrap">
+          <span className="truncate">Personal Workspace</span>
+          <svg
+            viewBox="0 0 24 24"
+            width="1.2em"
+            height="1.2em"
+            className="mx-2">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="m9 18l6-6l-6-6"
+            />
+          </svg>
+          <span>History</span>
+        </div>
+      </div>
+
       {/* Search and Actions Bar */}
       <div className="sticky top-0 z-10 flex flex-shrink-0 flex-col overflow-x-auto border-b border-dividerLight bg-primary">
         <div className="flex">
           <input
             type="search"
             autoComplete="off"
-            className="flex w-full bg-transparent px-4 py-2 h-7 text-xs"
+            className="flex w-full bg-transparent px-4 py-2 h-8 text-secondaryLight placeholder-secondaryLight focus:outline-none"
             placeholder="Search"
           />
           <div className="flex">
@@ -109,14 +194,13 @@ const History = () => {
               role="button"
               target="_blank"
               rel="noopener"
-              exact="true"
-              className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-secondary hover:text-secondaryDark focus-visible:text-secondaryDark p-1.5"
+              className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-secondary hover:text-secondaryDark focus-visible:text-secondaryDark p-2"
               tabIndex="0">
               <span className="inline-flex items-center justify-center whitespace-nowrap">
                 <svg
                   viewBox="0 0 24 24"
-                  width="1em"
-                  height="1em"
+                  width="1.2em"
+                  height="1.2em"
                   className="svg-icons">
                   <g
                     fill="none"
@@ -133,24 +217,18 @@ const History = () => {
             </a>
 
             {/* Filter Button */}
-            <Tippy
-              content="Filter history"
-              placement="bottom"
-              className="tippy-box"
-              arrow={false}
-              theme="dark">
+            <Tippy content="Filter history" placement="bottom" theme="light">
               <span data-v-tippy="" aria-expanded="false">
                 <button
                   aria-label="button"
                   role="button"
-                  exact="true"
-                  className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-secondary hover:text-secondaryDark focus-visible:text-secondaryDark p-1.5"
+                  className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-secondary hover:text-secondaryDark focus-visible:text-secondaryDark p-2"
                   tabIndex="0">
                   <span className="inline-flex items-center justify-center whitespace-nowrap">
                     <svg
                       viewBox="0 0 24 24"
-                      width="1em"
-                      height="1em"
+                      width="1.2em"
+                      height="1.2em"
                       className="svg-icons">
                       <path
                         fill="none"
@@ -158,7 +236,8 @@ const History = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth="2"
-                        d="M22 3H2l8 9.46V19l4 2v-8.54z"></path>
+                        d="M22 3H2l8 9.46V19l4 2v-8.54z"
+                      />
                     </svg>
                     <div className="truncate max-w-[16rem]"></div>
                   </span>
@@ -167,42 +246,31 @@ const History = () => {
             </Tippy>
 
             {/* Clear History Button */}
-            <Tippy
-              content="Clear history"
-              placement="bottom"
-              className="tippy-box"
-              arrow={false}
-              theme="dark">
-              <button
-                aria-label="button"
-                role="button"
-                exact="true"
-                className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-secondary hover:text-secondaryDark focus-visible:text-secondaryDark p-1.5"
-                tabIndex="0"
-                data-testid="clear_history"
-                onClick={() => {
-                  if (confirm("Are you sure you want to clear all history?")) {
-                    clearAllHistory();
-                  }
-                }}>
-                <span className="inline-flex items-center justify-center whitespace-nowrap">
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="1em"
-                    height="1em"
-                    className="svg-icons">
-                    <path
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"></path>
-                  </svg>
-                  <div className="truncate max-w-[16rem]"></div>
-                </span>
-              </button>
-            </Tippy>
+            <button
+              aria-label="button"
+              role="button"
+              className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-secondary hover:text-secondaryDark focus-visible:text-secondaryDark p-2"
+              tabIndex="0"
+              data-testid="clear_history"
+              onClick={handleClearAll}>
+              <span className="inline-flex items-center justify-center whitespace-nowrap">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="1.2em"
+                  height="1.2em"
+                  className="svg-icons">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2m-6 5v6m4-6v6"
+                  />
+                </svg>
+                <div className="truncate max-w-[16rem]"></div>
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -238,25 +306,172 @@ const History = () => {
               <circle cx="12" cy="32" r="2" fill="currentColor" />
             </svg>
           </div>
-          <span className="max-w-sm mt-2 text-center whitespace-normal text-xs text-gray-500">
+          <span className="max-w-sm mt-2 text-center whitespace-normal text-tiny text-secondaryLight">
             History is empty
           </span>
-          <p className="text-center text-gray-600 text-xs mt-2 max-w-sm">
+          <p className="text-center text-secondaryLight text-tiny mt-2 max-w-sm">
             Start making requests to see them here
           </p>
         </div>
       ) : (
         <div className="flex flex-col">
           {groupedHistory.map((group) => (
-            <HistoryGroup
+            <details
               key={group.date}
-              groupDate={group.date}
-              entries={group.items}
-              onDelete={deleteHistoryEntry}
-              onToggleStar={toggleHistoryStar}
-              onRestore={handleRestoreRequest}
-              onDeleteGroup={handleDeleteGroup}
-            />
+              className="flex flex-col"
+              open={expandedGroups[group.date]}>
+              <summary
+                className="group flex min-w-0 flex-1 cursor-pointer items-center justify-between text-tiny text-secondaryLight transition focus:outline-none"
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleGroupExpansion(group.date);
+                }}>
+                <span className="inline-flex items-center justify-center truncate px-4 py-2 transition group-hover:text-secondary">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="1.2em"
+                    height="1.2em"
+                    className="indicator mr-2 flex flex-shrink-0">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m9 18l6-6l-6-6"
+                      style={{
+                        transform: expandedGroups[group.date]
+                          ? "rotate(90deg)"
+                          : "rotate(0deg)",
+                        transition: "transform 0.2s ease",
+                      }}
+                    />
+                  </svg>
+                  <span className="capitalize-first truncate">
+                    {group.date.toLowerCase()}
+                  </span>
+                </span>
+
+                <button
+                  aria-label="button"
+                  role="button"
+                  className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-red-500 hover:text-red-600 focus-visible:text-red-600 p-2 hidden group-hover:inline-flex"
+                  tabIndex="0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteGroup(group.date);
+                  }}>
+                  <span className="inline-flex items-center justify-center whitespace-nowrap">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="1.2em"
+                      height="1.2em"
+                      className="svg-icons">
+                      <path
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                      />
+                    </svg>
+                    <div className="truncate max-w-[16rem]"></div>
+                  </span>
+                </button>
+              </summary>
+
+              {/* History Items */}
+              {group.items.map((entry, index) => (
+                <div
+                  key={entry.id || index}
+                  className="group flex items-stretch"
+                  id={entry.id || index}>
+                  <span
+                    className={`flex w-16 cursor-pointer items-center justify-center truncate px-2 ${getMethodResponseClass(
+                      entry.method
+                    )}`}
+                    onClick={() => handleRestoreRequest(entry)}
+                    data-testid="restore_history_entry">
+                    <span
+                      className={`truncate text-tiny font-semibold ${getMethodColor(
+                        entry.method
+                      )}`}>
+                      {entry.method}
+                    </span>
+                  </span>
+
+                  <span
+                    className="flex min-w-0 flex-1 cursor-pointer py-2 pr-2 transition group-hover:text-secondaryDark"
+                    onClick={() => handleRestoreRequest(entry)}
+                    data-testid="restore_history_entry">
+                    <span className="truncate text-sm">{entry.url}</span>
+                  </span>
+
+                  <span>
+                    <span data-v-tippy="" aria-expanded="false"></span>
+                  </span>
+
+                  <button
+                    aria-label="button"
+                    role="button"
+                    className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-red-500 hover:text-red-600 focus-visible:text-red-600 p-2 hidden group-hover:inline-flex"
+                    tabIndex="0"
+                    data-testid="delete_history_entry"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteEntry(entry.id);
+                    }}>
+                    <span className="inline-flex items-center justify-center whitespace-nowrap">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="1.2em"
+                        height="1.2em"
+                        className="svg-icons">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+                        />
+                      </svg>
+                      <div className="truncate max-w-[16rem]"></div>
+                    </span>
+                  </button>
+
+                  <button
+                    aria-label="button"
+                    role="button"
+                    className="inline-flex items-center justify-center font-semibold transition whitespace-nowrap focus:outline-none text-yellow-500 hover:text-yellow-600 focus-visible:text-yellow-600 p-2 hidden group-hover:inline-flex"
+                    tabIndex="0"
+                    data-testid="star_button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleStar(entry.id);
+                    }}>
+                    <span className="inline-flex items-center justify-center whitespace-nowrap">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="1.2em"
+                        height="1.2em"
+                        className="svg-icons">
+                        <path
+                          fill={entry.is_starred ? "currentColor" : "none"}
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="m12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14L2 9.27l6.91-1.01z"
+                        />
+                      </svg>
+                      <div className="truncate max-w-[16rem]"></div>
+                    </span>
+                  </button>
+                </div>
+              ))}
+            </details>
           ))}
         </div>
       )}

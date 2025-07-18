@@ -1,152 +1,142 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Response from "../components/LeftPanel/Response";
 import RouteHeader from "../components/LeftPanel/RouteHeader";
 import RightPanel from "../components/RightPanel/RightPanel";
-import useHistoryStore from "../store/historyStore";
-import useRequestStore from "../store/store";
+import { TabProvider } from "../contexts/TabContext";
 
 function RestPanel() {
-  const [leftWidth, setLeftWidth] = useState(70); // Match GraphQL default
+  const [leftWidth, setLeftWidth] = useState(55);
   const [topHeight, setTopHeight] = useState(60);
+  const [isResizing, setIsResizing] = useState(false);
+  const [isVerticalResizing, setIsVerticalResizing] = useState(false);
   const containerRef = useRef(null);
   const verticalContainerRef = useRef(null);
-  const isResizing = useRef(false);
-  const isVerticalResizing = useRef(false);
-  const { addHistoryEntry } = useHistoryStore();
-  const { responseData, requestData } = useRequestStore();
 
-  // Match GraphQL constraints
-  const MIN_WIDTH = 40;
-  const MAX_WIDTH = 80;
-  const MIN_HEIGHT = 30;
-  const MAX_HEIGHT = 80;
-
-  // Horizontal resizing functions - Fixed with proper event handling
+  // Horizontal resizing logic
   const startResizing = (e) => {
+    setIsResizing(true);
     e.preventDefault();
-    e.stopPropagation();
-    isResizing.current = true;
-    document.addEventListener("mousemove", handleResize);
-    document.addEventListener("mouseup", stopResizing);
-    document.body.style.cursor = "col-resize";
-    document.body.style.userSelect = "none";
-  };
-
-  const handleResize = (e) => {
-    if (!isResizing.current || !containerRef.current) return;
-
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const newWidth =
-      ((e.clientX - containerRect.left) / containerRect.width) * 100;
-
-    // Apply constraints
-    const clampedWidth = Math.min(Math.max(newWidth, MIN_WIDTH), MAX_WIDTH);
-    setLeftWidth(clampedWidth);
   };
 
   const stopResizing = () => {
-    isResizing.current = false;
-    document.removeEventListener("mousemove", handleResize);
-    document.removeEventListener("mouseup", stopResizing);
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
+    setIsResizing(false);
   };
 
-  // Vertical resizing functions
-  const startVerticalResizing = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    isVerticalResizing.current = true;
-    document.addEventListener("mousemove", handleVerticalResize);
-    document.addEventListener("mouseup", stopVerticalResizing);
-    document.body.style.cursor = "row-resize";
-    document.body.style.userSelect = "none";
-  };
+  const resize = (e) => {
+    if (isResizing && containerRef.current) {
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const newLeftWidth =
+        ((e.clientX - containerRect.left) / containerWidth) * 100;
 
-  const handleVerticalResize = (e) => {
-    if (!isVerticalResizing.current || !verticalContainerRef.current) return;
-
-    const containerRect = verticalContainerRef.current.getBoundingClientRect();
-    const newHeight =
-      ((e.clientY - containerRect.top) / containerRect.height) * 100;
-
-    // Apply constraints
-    const clampedHeight = Math.min(Math.max(newHeight, MIN_HEIGHT), MAX_HEIGHT);
-    setTopHeight(clampedHeight);
-  };
-
-  const stopVerticalResizing = () => {
-    isVerticalResizing.current = false;
-    document.removeEventListener("mousemove", handleVerticalResize);
-    document.removeEventListener("mouseup", stopVerticalResizing);
-    document.body.style.cursor = "";
-    document.body.style.userSelect = "";
-  };
-
-  // This function should be called after a successful request
-  const handleRequestComplete = async (requestDetails, responseDetails) => {
-    try {
-      await addHistoryEntry({
-        method: requestDetails.method || "GET",
-        url: requestDetails.url || "",
-        headers: requestDetails.headers || {},
-        body: requestDetails.body || null,
-        responseStatus: responseDetails.status || 200,
-        responseBody: responseDetails.data || "",
-        responseHeaders: responseDetails.headers || {},
-        responseTime: responseDetails.responseTime || 0,
-        requestType: "REST",
-      });
-    } catch (error) {
-      console.error("Failed to add to history:", error);
+      if (newLeftWidth > 30 && newLeftWidth < 80) {
+        setLeftWidth(newLeftWidth);
+      }
     }
   };
 
+  // Vertical resizing logic
+  const startVerticalResizing = (e) => {
+    setIsVerticalResizing(true);
+    e.preventDefault();
+  };
+
+  const stopVerticalResizing = () => {
+    setIsVerticalResizing(false);
+  };
+
+  const resizeVertical = (e) => {
+    if (isVerticalResizing && verticalContainerRef.current) {
+      const containerRect =
+        verticalContainerRef.current.getBoundingClientRect();
+      const containerHeight = containerRect.height;
+      const newTopHeight =
+        ((e.clientY - containerRect.top) / containerHeight) * 100;
+
+      if (newTopHeight > 30 && newTopHeight < 80) {
+        setTopHeight(newTopHeight);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", resize);
+      document.addEventListener("mouseup", stopResizing);
+    } else {
+      document.removeEventListener("mousemove", resize);
+      document.removeEventListener("mouseup", stopResizing);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", resize);
+      document.removeEventListener("mouseup", stopResizing);
+    };
+  }, [isResizing]);
+
+  useEffect(() => {
+    if (isVerticalResizing) {
+      document.addEventListener("mousemove", resizeVertical);
+      document.addEventListener("mouseup", stopVerticalResizing);
+    } else {
+      document.removeEventListener("mousemove", resizeVertical);
+      document.removeEventListener("mouseup", stopVerticalResizing);
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", resizeVertical);
+      document.removeEventListener("mouseup", stopVerticalResizing);
+    };
+  }, [isVerticalResizing]);
+
   return (
-    <div
-      className="flex w-full h-full border-l border-gray-700/30"
-      ref={containerRef}>
-      {/* Left Panel with Vertical Split */}
+    <TabProvider>
       <div
-        style={{ width: `${leftWidth}%` }}
-        className="flex flex-col"
-        ref={verticalContainerRef}>
-        {/* Top Section - RouteHeader */}
-        <div style={{ height: `${topHeight}%` }} className="overflow-hidden">
-          <RouteHeader onRequestComplete={handleRequestComplete} />
-        </div>
-
-        {/* Vertical Drag Handle - More subtle like original */}
+        className="flex w-full h-full border-l border-gray-700/30"
+        ref={containerRef}>
+        {/* Left Panel with Vertical Split */}
         <div
-          onMouseDown={startVerticalResizing}
-          className="h-[2px] bg-zinc-700/50 cursor-row-resize hover:bg-btn transition-all duration-200 hover:h-[4px] flex-shrink-0"
-        />
+          style={{ width: `${leftWidth}%` }}
+          className="flex flex-col"
+          ref={verticalContainerRef}>
+          {/* Top Section - RouteHeader */}
+          <div style={{ height: `${topHeight}%` }} className="overflow-hidden">
+            {/* Remove onRequestComplete prop to prevent duplicate history entries */}
+            <RouteHeader />
+          </div>
 
-        {/* Bottom Section - Response */}
-        <div
-          style={{ height: `${100 - topHeight}%` }}
-          className="overflow-hidden">
-          <div className="h-full p-4">
-            <Response />
+          {/* Vertical Drag Handle */}
+          <div
+            onMouseDown={startVerticalResizing}
+            className="h-[2px] bg-zinc-700/50 cursor-row-resize hover:bg-btn transition-all duration-200 hover:h-[4px] flex-shrink-0"
+          />
+
+          {/* Bottom Section - Response */}
+          <div
+            style={{ height: `${100 - topHeight}%` }}
+            className="overflow-hidden">
+            <div className="h-full p-4">
+              <Response />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Horizontal Drag Handle - Much more subtle and properly positioned */}
-      <div
-        onMouseDown={startResizing}
-        className="w-[2px] cursor-col-resize bg-zinc-700/50 hover:bg-btn transition-all duration-200 hover:w-[4px] flex-shrink-0 relative z-50"
-        style={{
-          minWidth: "2px",
-          maxWidth: "4px",
-        }}
-      />
+        {/* Horizontal Drag Handle */}
+        <div
+          onMouseDown={startResizing}
+          className="w-[2px] cursor-col-resize bg-zinc-700/50 hover:bg-btn transition-all duration-200 hover:w-[4px] flex-shrink-0 relative z-50"
+          style={{
+            minWidth: "2px",
+            maxWidth: "4px",
+          }}
+        />
 
-      {/* Right Panel */}
-      <div style={{ width: `${100 - leftWidth}%` }}>
-        <RightPanel />
+        {/* Right Panel */}
+        <div style={{ width: `${100 - leftWidth}%` }}>
+          <RightPanel />
+        </div>
       </div>
-    </div>
+    </TabProvider>
   );
 }
 

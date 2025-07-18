@@ -28,6 +28,12 @@ function RealTimePanel() {
   const [messageType, setMessageType] = useState("JSON");
   const [clearInput, setClearInput] = useState(false);
   const [topHeight, setTopHeight] = useState(60); // Add vertical drag state
+  const [realTimeUrl, setRealTimeUrl] = useState({
+    WebSocket: "wss://echo.hoppscotch.io",
+    SSE: "https://sse.hoppscotch.io",
+    SocketIO: "https://socketio.hoppscotch.io",
+    MQTT: "mqtt://broker.hoppscotch.io",
+  });
 
   const verticalContainerRef = useRef(null); // Add ref for vertical container
   const isVerticalResizing = useRef(false); // Add vertical resizing state
@@ -246,14 +252,13 @@ function RealTimePanel() {
                 <input
                   type="text"
                   className="lg:h-full h-9 w-full text-xs font-medium ps-5 focus:outline-none rounded placeholder:text-[11px] placeholder:text-zinc-500"
-                  value={
-                    activeRealTimeTab === "WebSocket"
-                      ? "wss://echo.hoppscotch.io"
-                      : activeRealTimeTab === "SSE"
-                      ? "https://sse.hoppscotch.io"
-                      : activeRealTimeTab === "SocketIO"
-                      ? "https://socketio.hoppscotch.io"
-                      : "mqtt://broker.hoppscotch.io"
+                  placeholder="Enter URL"
+                  value={realTimeUrl[activeRealTimeTab] || ""}
+                  onChange={(e) =>
+                    setRealTimeUrl((prev) => ({
+                      ...prev,
+                      [activeRealTimeTab]: e.target.value,
+                    }))
                   }
                 />
               </div>

@@ -25,11 +25,23 @@ const formatTooltipDate = (timestamp) => {
 };
 
 const HistoryItem = ({ entry, onDelete, onToggleStar, onRestore }) => {
+  // Handle clicking on a history item to restore it
+  const handleRestore = () => {
+    // Check if we have stored tab information
+    if (entry.tabId) {
+      // Call restore with tab information
+      onRestore(entry, { tabId: entry.tabId, tabTitle: entry.tabTitle });
+    } else {
+      // Otherwise just call regular restore
+      onRestore(entry);
+    }
+  };
+
   return (
     <div className="group flex items-stretch" id={entry.id}>
       <span
         className="flex w-16 cursor-pointer items-center justify-center truncate px-2"
-        onClick={() => onRestore(entry)}
+        onClick={handleRestore}
         data-testid="restore_history_entry">
         <span
           className={`truncate text-xxs font-semibold ${getMethodColor(
@@ -41,13 +53,13 @@ const HistoryItem = ({ entry, onDelete, onToggleStar, onRestore }) => {
 
       <Tippy
         content={formatTooltipDate(entry.timestamp)}
-        placement="top" // Changed to top
-        theme="light" // Changed to light theme
+        placement="top"
+        theme="light"
         className="tooltip-small"
         arrow={false}>
         <span
           className="flex min-w-0 flex-1 cursor-pointer py-1.5 pr-2 transition text-secondaryLight group-hover:text-white"
-          onClick={() => onRestore(entry)}
+          onClick={handleRestore}
           data-testid="restore_history_entry">
           <span className="truncate text-xs">{entry.url}</span>
         </span>

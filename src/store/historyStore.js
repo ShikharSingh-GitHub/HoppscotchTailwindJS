@@ -5,6 +5,7 @@ const useHistoryStore = create((set, get) => ({
   history: [],
   loading: false,
   error: null,
+  isAddingHistory: false,
 
   // Fetch history from backend
   fetchHistory: async (type = null) => {
@@ -20,20 +21,34 @@ const useHistoryStore = create((set, get) => ({
     }
   },
 
-  // Add new history entry
+  // Add new history entry with duplicate prevention
   addHistoryEntry: async (requestData) => {
+    const { isAddingHistory } = get();
+
+    if (isAddingHistory) {
+      console.log("History addition already in progress, skipping...");
+      return;
+    }
+
     try {
+      set({ isAddingHistory: true });
       console.log("Adding history entry:", requestData);
+
       const response = await apiService.addToHistory(requestData);
       console.log("History entry added successfully:", response);
 
-      // Refresh the history list
-      await get().fetchHistory();
+      // Refresh the history list after successful addition
+      setTimeout(() => {
+        get().fetchHistory();
+      }, 500);
+
       return response;
     } catch (error) {
       console.error("Error adding to history:", error);
       set({ error: error.message });
       throw error;
+    } finally {
+      set({ isAddingHistory: false });
     }
   },
 
@@ -41,8 +56,6 @@ const useHistoryStore = create((set, get) => ({
   deleteHistoryEntry: async (id) => {
     try {
       await apiService.deleteHistory(id);
-
-      // Remove from local state
       const currentHistory = get().history;
       const updatedHistory = currentHistory.filter((entry) => entry.id !== id);
       set({ history: updatedHistory });
@@ -57,8 +70,6 @@ const useHistoryStore = create((set, get) => ({
   toggleHistoryStar: async (id) => {
     try {
       await apiService.toggleHistoryStar(id);
-
-      // Update local state
       const currentHistory = get().history;
       const updatedHistory = currentHistory.map((entry) =>
         entry.id === id ? { ...entry, is_starred: !entry.is_starred } : entry
@@ -83,15 +94,14 @@ const useHistoryStore = create((set, get) => ({
     }
   },
 
-  // Restore history entry
+  // Main function to restore from history with tab management
   restoreFromHistory: (historyEntry) => {
-    set({
-      url: historyEntry.url,
-      method: historyEntry.method,
-      headers: JSON.parse(historyEntry.headers || "{}"),
-      params: [], // You might want to parse these from the URL
-      body: historyEntry.body || "",
-    });
+    console.log("Restoring from history:", historyEntry);
+
+    // Trigger tab restoration
+    if (window.restoreTab) {
+      window.restoreTab(historyEntry);
+    }
   },
 }));
 
